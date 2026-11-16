@@ -52,6 +52,8 @@ Reglas de entornos:
 
 `main` es la rama principal y equivale a producción; `develop` es la rama de pruebas y equivale a `staging`. El trabajo diario nunca toca ninguna de las dos directamente. El despliegue automático de `develop` en `staging` empieza al cerrar la fase 1.
 
+En GitHub, la rama por defecto es `develop`: es la base de todos los PRs del día a día y así `Closes #<issue>` cierra el issue al fusionar. `main` sigue siendo la rama de producción y solo recibe releases y hotfixes.
+
 ```mermaid
 flowchart LR
     F["feature/* · fix/*<br/>trabajo diario"] -- "PR + CI en verde (squash)" --> D["develop<br/>rama de pruebas"]
@@ -472,4 +474,5 @@ La documentación se escribe en español, en Markdown, y se revisa en los PRs co
 - [x] **Migraciones en los entornos desplegados.** Decidido el 12 de noviembre de 2026: las ejecuta GitHub Actions con Flyway y el usuario `*_migrator` antes de llamar al deploy hook de Render.
 - [x] **Límite de intentos de login.** Decidido el 12 de noviembre de 2026: bloqueo por email + IP y límite por IP, contadores en memoria y siempre 401 genérico (sin 423), para no revelar emails ni permitir bloquear al administrador.
 - [x] **Comentarios del código.** Decidido el 16 de noviembre de 2026: en español, explicando el porqué; Javadoc y TSDoc obligatorios en los servicios, comprobados en la CI con Checkstyle y `eslint-plugin-jsdoc`.
+- [x] **Rama por defecto en GitHub.** Decidido el 16 de noviembre de 2026: `develop`, porque `Closes #<issue>` solo cierra issues al fusionar en la rama por defecto y todos los PRs del día a día van a `develop`.
 - [ ] **Prefijo de los selectores Angular** (`cv-` es provisional; el nombre del club, Los Chicharros V.C., también lo es).
