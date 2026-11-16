@@ -1,0 +1,4 @@
+# Tests: Testcontainers crea el MySQL y rellena la conexión (@ServiceConnection).
+spring:
+  flyway:
+    clean-disabled: false

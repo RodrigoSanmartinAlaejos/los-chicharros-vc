@@ -1,0 +1,15 @@
+# Entorno de pruebas (TiDB Cloud Starter). Definido, pero no se despliega hasta cerrar la fase 1.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+    clean-disabled: false
+
+logging:
+  level:
+    root: info
