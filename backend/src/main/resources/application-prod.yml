@@ -1,0 +1,14 @@
+# Producción (TiDB Cloud Starter). Las migraciones las ejecuta GitHub Actions antes del despliegue.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    clean-disabled: true
+
+logging:
+  level:
+    root: warn
