@@ -12,6 +12,7 @@ Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR c
 | [Ficha del club](01-vision/club.md) | Datos del club ficticio, escudo, pabellones, categorías, competiciones y rivales de ejemplo |
 | [Glosario](01-vision/glosario.md) | Términos del dominio y su nombre en el código |
 | [Matriz de permisos](02-requisitos/matriz-permisos.md) | Qué puede hacer cada rol |
+| [Casos de uso por rol](06-diagramas/casos-de-uso.md) | Diagramas de lo que puede hacer cada rol, con la fase en la que llega cada caso |
 | [Paleta de colores](02-requisitos/paleta-colores.md) | Colores Atlántico y arena, variables CSS y reglas de contraste |
 | [Reglas técnicas](07-desarrollo/reglas-tecnicas.md) | Cómo se escribe el código, entornos, ramas y bases de datos |
 | [Decisiones de arquitectura (ADR)](adr/README.md) | Por qué se tomó cada decisión técnica importante |
