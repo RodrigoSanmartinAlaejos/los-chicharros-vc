@@ -1,6 +1,6 @@
 # Pautas del proyecto: Web del club de voleibol
 
-Última revisión: 2026-11-16.
+Última revisión: 2026-11-22.
 
 Estas son las reglas obligatorias para llevar el proyecto como se haría en una empresa. Cualquier persona que se incorpore debe poder leerlas y seguir trabajando sin preguntar. El qué se construye está en el [plan del proyecto](plan-proyecto.md), quién puede hacer qué en la [matriz de permisos](../02-requisitos/matriz-permisos.md) y cómo se escribe el código en las [reglas técnicas](../07-desarrollo/reglas-tecnicas.md); este documento define cómo se trabaja.
 
@@ -18,6 +18,7 @@ Estas son las reglas obligatorias para llevar el proyecto como se haría en una 
 | 2026-11-10 | CI | Desde la fase 0, junto a la protección de ramas |
 | 2026-11-10 | Tests | Testcontainers obligatorio; Vitest y Playwright en el frontend |
 | 2026-11-10 | Gestor de paquetes | pnpm; nunca npm |
+| 2026-11-22 | Tests | Smoke tras cada despliegue y rendimiento con k6 antes de cada release; cómo se hacen, en la guía de tests |
 
 ## Principios
 
@@ -132,7 +133,7 @@ Formato [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/): 
 
 - Versionado semántico: `MAJOR.MINOR.PATCH`. Cada fase terminada es una versión menor (`v0.1.0` = fase 1).
 - Al fusionar `develop` en `main` se crea una etiqueta y una release en GitHub con las notas del changelog.
-- Antes de cada release se pasan los tests E2E y la checklist de release.
+- Antes de cada release se pasan los tests E2E, la prueba de rendimiento en `staging` y la checklist de release; después de desplegar, el smoke.
 - `v1.0.0` cuando el proyecto esté completo y desplegado.
 
 ### Sprints sin fechas
@@ -225,8 +226,12 @@ El detalle por lenguaje está en las reglas técnicas; aquí va lo esencial.
 | Seguridad | Cada fila de la matriz de permisos: 401/403 a quien no debe | MockMvc | Cada push y PR |
 | Frontend | Componentes, servicios y formularios clave | Vitest | Cada push y PR |
 | Extremo a extremo | 3 o 4 flujos críticos: login, publicar noticia, resultado y clasificación, convocatoria | Playwright | Antes de cada release |
+| Smoke | Que el despliegue está vivo: salud de la API, portada con SSR, proxy de la API | `curl` en GitHub Actions | Después de cada despliegue |
+| Rendimiento | Lecturas públicas con 20 usuarios virtuales y umbrales de p95 | k6, solo contra `staging` | Antes de cada release (desde que exista `staging`) |
 
 Meta orientativa: 70 % de cobertura en servicios, medida con JaCoCo y visible en la CI.
+
+Cómo se escribe, dónde vive y cómo se ejecuta cada tipo: [guía de tests](../07-desarrollo/guia-tests.md).
 
 ### Definition of Ready (una historia puede empezarse cuando…)
 

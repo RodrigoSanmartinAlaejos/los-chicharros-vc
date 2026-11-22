@@ -1,6 +1,6 @@
 # Documentación del proyecto
 
-Última revisión: 2026-11-16.
+Última revisión: 2026-11-22.
 
 Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR como el código.
 
@@ -11,3 +11,4 @@ Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR c
 | [Matriz de permisos](02-requisitos/matriz-permisos.md) | Qué puede hacer cada rol |
 | [Paleta de colores](02-requisitos/paleta-colores.md) | Colores Atlántico y arena, variables CSS y reglas de contraste |
 | [Reglas técnicas](07-desarrollo/reglas-tecnicas.md) | Cómo se escribe el código, entornos, ramas y bases de datos |
+| [Guía de tests](07-desarrollo/guia-tests.md) | Cómo se escriben y se ejecutan los tests: unitarios, integración, seguridad, frontend, E2E, smoke y rendimiento |
