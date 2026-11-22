@@ -1,6 +1,6 @@
 # Matriz de permisos: rol × acción
 
-Última revisión: 2026-11-12 (primera versión: 2026-11-10). Es el entregable del paso 3 de la fase de planificación.
+Última revisión: 2026-11-22 (primera versión: 2026-11-10). Es el entregable del paso 3 de la fase de planificación.
 
 Esta matriz es la referencia de autorización del proyecto: cada fila acaba siendo una regla `@PreAuthorize`, una comprobación de propiedad en el servicio y un test de seguridad (401/403). Si una tabla de endpoints del [plan](../00-plan/plan-proyecto.md) dice otra cosa, manda esta matriz.
 
@@ -116,9 +116,9 @@ Reglas generales:
 
 El panel de gestión tiene una sección por área: noticias y avisos (comunicación), equipos, personas, competiciones y partidos (coordinador), cuotas y pagos (tesorero, fase 4) y configuración (solo admin). El menú muestra solo las secciones del rol, pero el backend comprueba cada acción. El entrenador no entra al panel: trabaja desde su área de entrenador.
 
-## Puntos que conviene revisar
+## Decisiones de la matriz
 
-Son decisiones que he tomado al redactar la matriz y que no estaban escritas en el plan:
+Decisiones que no estaban escritas en el plan; revisadas y confirmadas el 2026-11-22:
 
 - **Corregir un resultado finalizado** queda para coordinador y admin; el entrenador solo lo introduce la primera vez.
 - **El tesorero no ve datos deportivos** (plantillas, asistencia) ni el coordinador datos económicos.
