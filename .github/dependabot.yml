@@ -35,3 +35,7 @@ updates:
       interval: weekly
     commit-message:
       prefix: chore
+    ignore:
+      # MySQL se queda en 8.4 LTS (reglas técnicas); solo se aceptan parches dentro de 8.4
+      - dependency-name: mysql
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
