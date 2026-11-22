@@ -1,0 +1,53 @@
+name: Historia de usuario
+description: Una funcionalidad vista desde un rol del club.
+title: "[Historia] "
+labels: [feature]
+body:
+  - type: textarea
+    id: historia
+    attributes:
+      label: Historia
+      description: Formato obligatorio.
+      value: "Como [rol] quiero [acción] para [beneficio]."
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Uno por bloque, en formato Dado / Cuando / Entonces (cada uno acabará siendo un test).
+      value: |
+        - **Dado** …
+          **Cuando** …
+          **Entonces** …
+    validations:
+      required: true
+  - type: dropdown
+    id: moscow
+    attributes:
+      label: Prioridad MoSCoW
+      options: [Must, Should, Could, "Won't (esta fase)"]
+    validations:
+      required: true
+  - type: dropdown
+    id: puntos
+    attributes:
+      label: Estimación (puntos)
+      description: Una historia de más de 8 puntos se divide.
+      options: ["1", "2", "3", "5", "8"]
+    validations:
+      required: true
+  - type: textarea
+    id: diseno
+    attributes:
+      label: Diseño
+      description: Tablas, endpoint, pantalla y fila de la matriz de permisos que toca.
+  - type: checkboxes
+    id: ready
+    attributes:
+      label: Definition of Ready
+      options:
+        - label: Tiene criterios de aceptación Dado / Cuando / Entonces
+        - label: Está estimada y tiene prioridad y milestone
+        - label: Su diseño (tablas, endpoint, pantalla, permisos) está definido
+        - label: No depende de otra historia sin terminar
