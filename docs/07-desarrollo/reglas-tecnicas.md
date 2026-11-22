@@ -1,6 +1,6 @@
 # Reglas técnicas: lenguajes, ramas y entornos
 
-Última revisión: 2026-11-16.
+Última revisión: 2026-11-22.
 
 Estas reglas son obligatorias para todo el código del proyecto: cada lenguaje tiene sus convenciones y cada rama tiene su propio entorno y su propia base de datos, sin cruces.
 
@@ -253,7 +253,7 @@ Solo la configuración exclusiva del administrador (usuarios, roles e historial)
 13. Las imágenes se guardan siempre a través de la interfaz `ImageStorage`; la implementación (disco local o Cloudinary) la elige el perfil. La base de datos solo guarda la URL.
 14. Los emails se envían siempre a través de la interfaz `EmailSender`; la implementación la elige el perfil: SMTP contra Mailpit en `dev` y la API HTTP de Brevo (puerto 443) en `staging` y `prod`, porque Render gratuito bloquea los puertos SMTP 25, 465 y 587.
 15. El cuerpo de las noticias se guarda en Markdown. El backend lo convierte a HTML y lo sanea con una lista blanca de etiquetas (OWASP Java HTML Sanitizer) antes de devolverlo; el frontend nunca sanea por su cuenta ni confía en HTML que no venga de ahí.
-16. Los tests de integración usan siempre MySQL real con Testcontainers. No se usa H2.
+16. Los tests de integración usan siempre MySQL real con Testcontainers. No se usa H2. Cómo se escriben y se ejecutan todos los tests: [guía de tests](guia-tests.md).
 
 **Autenticación**
 
@@ -361,6 +361,7 @@ frontend/src/app/
 1. Tests unitarios y de componentes con Vitest: `pnpm test`.
 2. Tests de extremo a extremo con Playwright en `frontend/e2e/`, solo para los flujos críticos: login, publicar una noticia, introducir un resultado y ver la clasificación, responder una convocatoria.
 3. Los E2E se ejecutan contra el entorno local completo (Docker Compose) y en la CI del PR de release.
+4. El detalle (estructura, ejemplos, comandos, smoke y rendimiento) está en la [guía de tests](guia-tests.md).
 
 ## HTML y SCSS
 
@@ -474,5 +475,6 @@ La documentación se escribe en español, en Markdown, y se revisa en los PRs co
 - [x] **Migraciones en los entornos desplegados.** Decidido el 12 de noviembre de 2026: las ejecuta GitHub Actions con Flyway y el usuario `*_migrator` antes de llamar al deploy hook de Render.
 - [x] **Límite de intentos de login.** Decidido el 12 de noviembre de 2026: bloqueo por email + IP y límite por IP, contadores en memoria y siempre 401 genérico (sin 423), para no revelar emails ni permitir bloquear al administrador.
 - [x] **Comentarios del código.** Decidido el 16 de noviembre de 2026: en español, explicando el porqué; Javadoc y TSDoc obligatorios en los servicios, comprobados en la CI con Checkstyle y `eslint-plugin-jsdoc`.
+- [x] **Smoke y rendimiento.** Decidido el 22 de noviembre de 2026: smoke con `curl` en GitHub Actions después de cada despliegue, y rendimiento con k6 solo contra `staging`, a mano antes de cada release; detalle en la [guía de tests](guia-tests.md).
 - [x] **Rama por defecto en GitHub.** Decidido el 16 de noviembre de 2026: `develop`, porque `Closes #<issue>` solo cierra issues al fusionar en la rama por defecto y todos los PRs del día a día van a `develop`.
 - [ ] **Prefijo de los selectores Angular** (`cv-` es provisional; el nombre del club, Los Chicharros V.C., también lo es).
