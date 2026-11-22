@@ -8,6 +8,7 @@ Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR c
 | --- | --- |
 | [Plan del proyecto](00-plan/plan-proyecto.md) | Qué se construye: fases, modelo de datos, endpoints y decisiones |
 | [Pautas del proyecto](00-plan/pautas-proyecto.md) | Cómo se trabaja: issues, ramas, PRs, documentación y Definition of Done |
+| [Visión y alcance](01-vision/vision.md) | Problema, objetivos, usuarios, alcance por fases y criterios de éxito |
 | [Matriz de permisos](02-requisitos/matriz-permisos.md) | Qué puede hacer cada rol |
 | [Paleta de colores](02-requisitos/paleta-colores.md) | Colores Atlántico y arena, variables CSS y reglas de contraste |
 | [Reglas técnicas](07-desarrollo/reglas-tecnicas.md) | Cómo se escribe el código, entornos, ramas y bases de datos |
