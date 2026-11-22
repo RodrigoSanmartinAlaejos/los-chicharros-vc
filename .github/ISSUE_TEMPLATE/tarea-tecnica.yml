@@ -1,0 +1,23 @@
+name: Tarea técnica
+description: Configuración, infraestructura, refactor o deuda técnica.
+title: "[Tarea] "
+body:
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué hay que hacer
+    validations:
+      required: true
+  - type: textarea
+    id: por-que
+    attributes:
+      label: Por qué
+  - type: textarea
+    id: hecho
+    attributes:
+      label: Cuándo está terminada
+      description: Lista comprobable.
+      value: |
+        - [ ]
+    validations:
+      required: true
