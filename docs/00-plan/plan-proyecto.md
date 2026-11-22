@@ -53,17 +53,17 @@ Tiene dos bloques que pueden avanzar en paralelo.
 ### Bloque A: repositorio, CI y entorno
 
 - [x] Crear repositorio en GitHub (monorepo con `backend/`, `frontend/` y `docs/`), con README, LICENSE (MIT), `.gitignore` y `.editorconfig`
-- [ ] Copiar a `docs/` este plan, las pautas, las reglas técnicas, la matriz de permisos y la paleta de colores; cambiar sus rutas claude/... por enlaces relativos de docs/; marcar los documentos vivos como «Versión de planificación; la vigente está en el repositorio» y dejar en las copias del proyecto solo un enlace al repositorio
-- [ ] Generar el proyecto Spring Boot 4.1 con Java 25 (Spring Initializr)
-- [ ] Crear el proyecto Angular 22 con SSR, usando pnpm
-- [ ] Fijar versiones: `pom.xml`, `.nvmrc`, `packageManager` en `package.json`
-- [ ] `docker-compose.yml` con MySQL 8.4 y Mailpit para desarrollo local
-- [ ] Perfiles de Spring `dev`, `test` y `prod` (el perfil `staging` queda definido, pero no se despliega hasta cerrar la fase 1)
-- [ ] CI con GitHub Actions: compilar, tests, formato y linter de backend y frontend en cada push y PR
-- [ ] Protección de ramas `main` y `develop`, Dependabot y secret scanning
-- [ ] Plantillas de issue y PR, etiquetas, milestones y tablero de GitHub Projects
-- [ ] ADR-001 (Angular), ADR-002 (Angular SSR) y ADR-003 (separación `Person` / `User`)
-- [ ] ADR-004 (proxy de la API en el servidor SSR, porque `onrender.com` está en la Public Suffix List)
+- [x] Copiar a `docs/` este plan, las pautas, las reglas técnicas, la matriz de permisos y la paleta de colores; cambiar sus rutas claude/... por enlaces relativos de docs/; marcar los documentos vivos como «Versión de planificación; la vigente está en el repositorio» y dejar en las copias del proyecto solo un enlace al repositorio
+- [x] Generar el proyecto Spring Boot 4.1 con Java 25 (Spring Initializr)
+- [x] Crear el proyecto Angular 22 con SSR, usando pnpm
+- [x] Fijar versiones: `pom.xml`, `.nvmrc`, `packageManager` en `package.json`
+- [x] `docker-compose.yml` con MySQL 8.4 y Mailpit para desarrollo local
+- [x] Perfiles de Spring `dev`, `test` y `prod` (el perfil `staging` queda definido, pero no se despliega hasta cerrar la fase 1)
+- [x] CI con GitHub Actions: compilar, tests, formato y linter de backend y frontend en cada push y PR (el formato y el linter del backend, Spotless y Checkstyle, quedan en su propio issue)
+- [x] Protección de ramas `main` y `develop`, Dependabot y secret scanning
+- [x] Plantillas de issue y PR, etiquetas, milestones y tablero de GitHub Projects
+- [x] ADR-001 (Angular), ADR-002 (Angular SSR) y ADR-003 (separación `Person` / `User`)
+- [x] ADR-004 (proxy de la API en el servidor SSR, porque `onrender.com` está en la Public Suffix List)
 
 ### Bloque B: planificación de la fase 1
 
@@ -446,6 +446,8 @@ Anoto aquí cada decisión importante, la más reciente arriba.
 | Fecha      | Decisión                                                                                                                         | Motivo                                                                                                                                                  |
 |------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2026-11-22 | Smoke tras cada despliegue y rendimiento con k6 contra `staging` antes de cada release                                           | Comprobar que cada despliegue está vivo y detectar regresiones de rendimiento sin cargar `prod` ni gastar la cuota gratuita                             |
+| 2026-11-22 | Bloque A de la fase 0 terminado: CI con 4 comprobaciones obligatorias y rulesets en `main` y `develop` | Desde aquí nada entra en esas ramas sin PR y CI en verde; Spotless, Checkstyle y Husky siguen como issues aparte |
+| 2026-11-16 | `develop` como rama por defecto en GitHub | `Closes #N` solo cierra issues al fusionar en la rama por defecto, y todos los PRs del día a día van a `develop` |
 | 2026-11-12 | Migraciones desde GitHub Actions antes del deploy hook; emails por la API HTTP de Brevo; el SSR llama a la URL pública de la API | El plan gratuito de Render no tiene pre-deploy command, bloquea los puertos SMTP y no recibe tráfico de red privada                                     |
 | 2026-11-12 | Límite de intentos de login por email + IP y por IP desde la fase 1, en memoria y siempre con 401 genérico                       | El bloqueo por cuenta con 423 revelaba qué emails existen y permitía a cualquiera dejar bloqueado al único administrador                                |
 | 2026-11-12 | Envío de emails con Brevo desde la fase 2                                                                                        | La invitación y la recuperación de contraseña de la fase 2 necesitan email; SendGrid ya no tiene plan gratuito y Brevo permite 300 emails al día gratis |
