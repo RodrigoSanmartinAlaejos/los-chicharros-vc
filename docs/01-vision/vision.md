@@ -21,7 +21,7 @@ El proyecto tiene dos objetivos, y las decisiones se toman pensando en los dos:
 | Objetivo | Qué significa | Qué exige al proyecto |
 | --- | --- | --- |
 | **Portfolio para buscar trabajo** | Demostrar que sé llevar un proyecto fullstack como en una empresa | Código limpio y probado, CI, PRs revisados, ADR y documentación que se pueda enseñar y explicar en una entrevista |
-| **Presentarlo a un club real** | Que un club pueda adoptarlo cambiando datos y configuración, no reescribiéndolo | Datos de ejemplo sustituibles, reglas de competición configurables, protección de menores y RGPD desde el diseño, coste de alojamiento 0 € |
+| **Presentarlo a un club real** | Que un club pueda adoptarlo cambiando datos y configuración, no reescribiéndolo | Datos de ejemplo sustituibles, reglas de competición configurables y protección de menores y RGPD desde el diseño |
 
 ## Usuarios
 
@@ -57,13 +57,6 @@ El proyecto avanza por fases; cada una termina con una versión que se puede ens
 - Tienda online.
 - Gestión de varios clubes en una misma instalación.
 - Integración automática con la web de la federación: los resultados de otros equipos se introducen a mano.
-
-## Restricciones
-
-- **Presupuesto:** 0 €. Render y TiDB Cloud Starter en planes gratuitos, sin tarjeta y sin dominio propio por ahora.
-- **Tiempo:** 5-10 horas semanales, compatibles con las prácticas; sin fechas, por orden de fases.
-- **Equipo:** una sola persona, trabajando como si fuera un equipo (issues, ramas, PRs y CI).
-- **Datos:** siempre ficticios, nunca de personas reales, ni en desarrollo ni en la demo.
 
 ## Criterios de éxito
 
