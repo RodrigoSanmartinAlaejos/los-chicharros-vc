@@ -1,6 +1,6 @@
 # Plan de proyecto: Web del club de voleibol
 
-Última revisión: 2026-11-16.
+Última revisión: 2026-11-22.
 
 ## Visión general
 
@@ -31,7 +31,7 @@ Un usuario puede tener varios roles a la vez, por ejemplo un entrenador que tamb
 | Base de datos     | MySQL 8.4, migraciones con Flyway                                                                                          |
 | Frontend          | Angular 22 con SSR (renderizado en servidor para la parte pública), Node 24 LTS, pnpm                                      |
 | Documentación API | Swagger / OpenAPI (springdoc)                                                                                              |
-| Tests             | JUnit 5, Mockito, Testcontainers (MySQL), Vitest, Playwright                                                               |
+| Tests             | JUnit 5, Mockito, Testcontainers (MySQL), Vitest, Playwright, k6                                                           |
 | Imágenes          | Interfaz `ImageStorage`: disco local en `dev`, Cloudinary en `staging` y `prod`                                            |
 | Monitorización    | Spring Boot Actuator, monitor externo de caídas, Sentry                                                                    |
 | Infraestructura   | Docker Compose, GitHub y GitHub Actions; Render (API y frontend) y TiDB Cloud Starter (base de datos), en planes gratuitos |
@@ -445,6 +445,7 @@ Anoto aquí cada decisión importante, la más reciente arriba.
 
 | Fecha      | Decisión                                                                                                                         | Motivo                                                                                                                                                  |
 |------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2026-11-22 | Smoke tras cada despliegue y rendimiento con k6 contra `staging` antes de cada release                                           | Comprobar que cada despliegue está vivo y detectar regresiones de rendimiento sin cargar `prod` ni gastar la cuota gratuita                             |
 | 2026-11-12 | Migraciones desde GitHub Actions antes del deploy hook; emails por la API HTTP de Brevo; el SSR llama a la URL pública de la API | El plan gratuito de Render no tiene pre-deploy command, bloquea los puertos SMTP y no recibe tráfico de red privada                                     |
 | 2026-11-12 | Límite de intentos de login por email + IP y por IP desde la fase 1, en memoria y siempre con 401 genérico                       | El bloqueo por cuenta con 423 revelaba qué emails existen y permitía a cualquiera dejar bloqueado al único administrador                                |
 | 2026-11-12 | Envío de emails con Brevo desde la fase 2                                                                                        | La invitación y la recuperación de contraseña de la fase 2 necesitan email; SendGrid ya no tiene plan gratuito y Brevo permite 300 emails al día gratis |
