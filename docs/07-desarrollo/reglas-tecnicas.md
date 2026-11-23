@@ -210,6 +210,7 @@ backend/src/main/java/com/<club>/api/
 ├── common/        Errores, configuración, auditoría, utilidades compartidas
 ├── security/      JWT, filtros, configuración de Spring Security
 ├── storage/       ImageStorage y sus implementaciones (local, Cloudinary)
+├── mail/          EmailSender y sus implementaciones (Mailpit, Brevo)
 ├── news/
 │   ├── NewsArticle.java              Entidad JPA
 │   ├── NewsArticleRepository.java

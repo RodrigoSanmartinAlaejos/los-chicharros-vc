@@ -39,7 +39,7 @@ Todos los errores siguen RFC 7807 (`application/problem+json`). En los de valida
   "detail": "La petición tiene campos no válidos",
   "instance": "/api/v1/news",
   "errors": [
-    { "field": "title", "message": "no puede estar vacío" }
+    { "field": "title", "message": "no debe estar vacío" }
   ]
 }
 ```
