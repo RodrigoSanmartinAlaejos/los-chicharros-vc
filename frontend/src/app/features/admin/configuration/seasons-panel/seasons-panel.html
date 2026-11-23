@@ -1,0 +1,157 @@
+<section aria-labelledby="seasons-title">
+  <div class="panel__header">
+    <h2 id="seasons-title">Temporadas</h2>
+    @if (!formOpen()) {
+      <button type="button" class="button button--primary" (click)="startCreate()">
+        + Nueva temporada
+      </button>
+    }
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando temporadas…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las temporadas.
+          <button type="button" class="link-button" (click)="load()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (items().length === 0) {
+          <p class="state">Todavía no hay temporadas.</p>
+        } @else {
+          <table class="panel__table">
+            <thead>
+              <tr>
+                <th scope="col">Temporada</th>
+                <th scope="col">Inicio</th>
+                <th scope="col">Fin</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (season of items(); track season.id) {
+                <tr>
+                  <td data-label="Temporada">
+                    <strong>{{ season.name }}</strong>
+                  </td>
+                  <td data-label="Inicio">{{ formatDate(season.startDate) }}</td>
+                  <td data-label="Fin">{{ formatDate(season.endDate) }}</td>
+                  <td data-label="Estado">
+                    @if (season.active) {
+                      <span class="badge">Activa</span>
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td>
+                    @if (confirmingId() === season.id) {
+                      <div class="confirm" role="group" [attr.aria-label]="'Borrar ' + season.name">
+                        <span>¿Borrar {{ season.name }}?</span>
+                        <button
+                          type="button"
+                          class="button button--danger"
+                          (click)="confirmDelete(season)"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button type="button" class="button" (click)="confirmingId.set(null)">
+                          Cancelar
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="panel__actions">
+                        <button type="button" class="link-button" (click)="startEdit(season)">
+                          Editar<span class="visually-hidden"> {{ season.name }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="link-button link-button--danger"
+                          (click)="askDelete(season)"
+                        >
+                          Borrar<span class="visually-hidden"> {{ season.name }}</span>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    }
+  </div>
+
+  @if (formOpen()) {
+    <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h3>{{ editingId() === null ? 'Nueva temporada' : 'Editar temporada' }}</h3>
+      @if (formError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field field--wide">
+        <label for="season-name">Nombre</label>
+        <input
+          id="season-name"
+          formControlName="name"
+          placeholder="2026-27"
+          aria-describedby="season-name-hint season-name-error"
+          [attr.aria-invalid]="errorOf('name') ? 'true' : null"
+        />
+        <span id="season-name-hint" class="field__hint"
+          >Año de inicio y dos cifras del de fin.</span
+        >
+        <p id="season-name-error" class="field__error">{{ errorOf('name') }}</p>
+      </div>
+      <div class="field">
+        <label for="season-start">Fecha de inicio</label>
+        <input
+          id="season-start"
+          type="date"
+          formControlName="startDate"
+          aria-describedby="season-start-error"
+          [attr.aria-invalid]="errorOf('startDate') ? 'true' : null"
+        />
+        <p id="season-start-error" class="field__error">{{ errorOf('startDate') }}</p>
+      </div>
+      <div class="field">
+        <label for="season-end">Fecha de fin</label>
+        <input
+          id="season-end"
+          type="date"
+          formControlName="endDate"
+          aria-describedby="season-end-error"
+          [attr.aria-invalid]="errorOf('endDate') ? 'true' : null"
+        />
+        <p id="season-end-error" class="field__error">{{ errorOf('endDate') }}</p>
+      </div>
+      <div class="field field--check field--wide">
+        <input
+          id="season-active"
+          type="checkbox"
+          formControlName="active"
+          aria-describedby="season-active-hint"
+        />
+        <label for="season-active">Temporada activa</label>
+        <span id="season-active-hint" class="field__hint"
+          >Si la activas, la que lo estaba deja de estarlo.</span
+        >
+      </div>
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" class="button" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  }
+</section>

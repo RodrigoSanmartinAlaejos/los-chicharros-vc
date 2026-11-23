@@ -1,0 +1,146 @@
+<section aria-labelledby="categories-title">
+  <div class="panel__header">
+    <h2 id="categories-title">Categorías</h2>
+    @if (!formOpen()) {
+      <button type="button" class="button button--primary" (click)="startCreate()">
+        + Nueva categoría
+      </button>
+    }
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando categorías…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las categorías.
+          <button type="button" class="link-button" (click)="load()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (items().length === 0) {
+          <p class="state">Todavía no hay categorías.</p>
+        } @else {
+          <table class="panel__table">
+            <thead>
+              <tr>
+                <th scope="col">Categoría</th>
+                <th scope="col">Sexo</th>
+                <th scope="col">Orden</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (category of items(); track category.id) {
+                <tr>
+                  <td data-label="Categoría">
+                    <strong>{{ category.name }}</strong>
+                  </td>
+                  <td data-label="Sexo">{{ genderLabels[category.gender] }}</td>
+                  <td data-label="Orden">{{ category.sortOrder }}</td>
+                  <td>
+                    @if (confirmingId() === category.id) {
+                      <div
+                        class="confirm"
+                        role="group"
+                        [attr.aria-label]="'Borrar ' + label(category)"
+                      >
+                        <span>¿Borrar {{ label(category) }}?</span>
+                        <button
+                          type="button"
+                          class="button button--danger"
+                          (click)="confirmDelete(category)"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button type="button" class="button" (click)="confirmingId.set(null)">
+                          Cancelar
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="panel__actions">
+                        <button type="button" class="link-button" (click)="startEdit(category)">
+                          Editar<span class="visually-hidden"> {{ label(category) }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="link-button link-button--danger"
+                          (click)="askDelete(category)"
+                        >
+                          Borrar<span class="visually-hidden"> {{ label(category) }}</span>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    }
+  </div>
+
+  @if (formOpen()) {
+    <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h3>{{ editingId() === null ? 'Nueva categoría' : 'Editar categoría' }}</h3>
+      @if (formError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field field--wide">
+        <label for="category-name">Nombre</label>
+        <input
+          id="category-name"
+          formControlName="name"
+          placeholder="Cadete"
+          maxlength="30"
+          aria-describedby="category-name-error"
+          [attr.aria-invalid]="errorOf('name') ? 'true' : null"
+        />
+        <p id="category-name-error" class="field__error">{{ errorOf('name') }}</p>
+      </div>
+      <div class="field">
+        <label for="category-gender">Sexo</label>
+        <select
+          id="category-gender"
+          formControlName="gender"
+          aria-describedby="category-gender-error"
+          [attr.aria-invalid]="errorOf('gender') ? 'true' : null"
+        >
+          @for (gender of genders; track gender[0]) {
+            <option [value]="gender[0]">{{ gender[1] }}</option>
+          }
+        </select>
+        <p id="category-gender-error" class="field__error">{{ errorOf('gender') }}</p>
+      </div>
+      <div class="field">
+        <label for="category-order">Orden</label>
+        <input
+          id="category-order"
+          type="number"
+          min="0"
+          formControlName="sortOrder"
+          aria-describedby="category-order-hint category-order-error"
+          [attr.aria-invalid]="errorOf('sortOrder') ? 'true' : null"
+        />
+        <span id="category-order-hint" class="field__hint"
+          >Posición en los listados de la web.</span
+        >
+        <p id="category-order-error" class="field__error">{{ errorOf('sortOrder') }}</p>
+      </div>
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" class="button" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  }
+</section>

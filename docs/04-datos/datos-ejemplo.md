@@ -15,7 +15,7 @@ node scripts/datos-ejemplo/generar.mjs --corte=2027-02-01
 
 - **Fecha de corte:** los partidos anteriores salen jugados (`FINISHED`) con su marcador. Los posteriores salen programados (`SCHEDULED`) y sin marcador. La clasificación y las crónicas se calculan con los jugados. Antes de una demo se puede volver a generar con una fecha de corte cercana.
 - **No se editan a mano:** si hay que cambiar algo, se cambia el script y se vuelve a ejecutar, en el mismo PR.
-- **De CSV a semilla:** cuando existan las migraciones de la fase 1, la semilla `db/seed` se escribe a partir de estos ficheros. Los CSV usan códigos legibles (`CADETE_F-LCV`, `P012`) en lugar de ids. Al pasar a SQL, cada código se convierte en una subconsulta o una variable, para no depender de los `AUTO_INCREMENT`.
+- **De CSV a semilla:** cuando existan las migraciones de la fase 1, la semilla `db/seed` se escribe a partir de estos ficheros. Los CSV usan códigos legibles (`CADETE_F-LCV`, `P012`) en lugar de ids. Al pasar a SQL, cada código se convierte en una subconsulta o una variable, para no depender de los `AUTO_INCREMENT`. Ya existe la de configuración (`R__seed_01_configuration.sql`: `seasons.csv` y `venues.csv`); `categories.csv` no va en la semilla porque lo carga la migración `V4_1__insert_categories.sql`.
 
 ## Ficheros
 

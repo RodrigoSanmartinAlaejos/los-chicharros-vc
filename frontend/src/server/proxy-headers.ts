@@ -34,10 +34,18 @@ export function forwardedRequestHeaders(incoming: Headers, client: ClientInfo): 
   const headers = withoutHopByHop(incoming);
   delete headers['host'];
   delete headers['forwarded'];
+  delete headers['x-forwarded-port'];
   headers['x-forwarded-for'] = client.ip;
   headers['x-forwarded-proto'] = client.protocol;
   headers['x-forwarded-host'] = client.host;
+  // Sin el puerto, la API construye URL absolutas (la cabecera Location de un 201) con el puerto por
+  // defecto del protocolo, y en local falta el :4000
+  headers['x-forwarded-port'] = forwardedPort(client);
   return headers;
+}
+
+function forwardedPort(client: ClientInfo): string {
+  return /:(\d+)$/.exec(client.host)?.[1] ?? (client.protocol === 'https' ? '443' : '80');
 }
 
 /** Cabeceras de la respuesta de la API que se devuelven al navegador. */

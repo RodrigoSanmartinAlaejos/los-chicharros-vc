@@ -14,7 +14,19 @@ describe('forwardedRequestHeaders', () => {
       'x-forwarded-for': '203.0.113.7',
       'x-forwarded-proto': 'https',
       'x-forwarded-host': 'chicharros.example.com',
+      'x-forwarded-port': '443',
     });
+  });
+
+  it('reenvía el puerto del Host para que la API construya bien las URL absolutas', () => {
+    const local = { ip: '127.0.0.1', protocol: 'http', host: 'localhost:4000' };
+
+    expect(forwardedRequestHeaders({ 'x-forwarded-port': '1' }, local)['x-forwarded-port']).toBe(
+      '4000',
+    );
+    expect(forwardedRequestHeaders({}, { ...local, host: 'localhost' })['x-forwarded-port']).toBe(
+      '80',
+    );
   });
 
   it('mantiene las cookies y la autorización, y quita las cabeceras de un solo salto', () => {

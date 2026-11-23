@@ -19,3 +19,12 @@ export const LEGAL_NAV: readonly NavItem[] = [
   { path: '/aviso-legal', label: 'Aviso legal' },
   { path: '/cookies', label: 'Cookies' },
 ];
+
+/**
+ * Menú lateral del panel de gestión. Cada historia añade su sección al crear su pantalla (orden de
+ * los wireframes: noticias, equipos, personas, competiciones, partidos, clasificaciones,
+ * configuración).
+ */
+export const ADMIN_NAV: readonly NavItem[] = [
+  { path: '/gestion/configuracion', label: 'Configuración' },
+];

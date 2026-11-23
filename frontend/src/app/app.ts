@@ -2,13 +2,14 @@ import { Component, inject } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { APP_ENV } from './core/config/app-env';
-import { SiteFooter } from './core/layout/site-footer/site-footer';
-import { SiteHeader } from './core/layout/site-header/site-header';
 
-/** Estructura común de la web pública: cabecera, contenido y pie. */
+/**
+ * Raíz de la aplicación: el enlace para saltar al contenido y el layout de cada zona (web pública
+ * o panel de gestión). Cada layout pone su `main#contenido`.
+ */
 @Component({
   selector: 'cv-root',
-  imports: [RouterOutlet, SiteHeader, SiteFooter],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
