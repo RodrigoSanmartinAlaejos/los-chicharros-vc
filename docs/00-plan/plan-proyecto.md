@@ -27,7 +27,7 @@ Un usuario puede tener varios roles a la vez, por ejemplo un entrenador que tamb
 
 | Capa              | Tecnología                                                                                                                 |
 |-------------------|----------------------------------------------------------------------------------------------------------------------------|
-| Backend           | Java 25 (LTS), Maven, Spring Boot 4.1, Spring Web, Spring Data JPA, Spring Security + JWT                                  |
+| Backend           | Java 25 (LTS), Maven, Spring Boot 4.2, Spring Web, Spring Data JPA, Spring Security + JWT                                  |
 | Base de datos     | MySQL 8.4, migraciones con Flyway                                                                                          |
 | Frontend          | Angular 22 con SSR (renderizado en servidor para la parte pública), Node 24 LTS, pnpm                                      |
 | Documentación API | Swagger / OpenAPI (springdoc)                                                                                              |
@@ -448,6 +448,7 @@ Anoto aquí cada decisión importante, la más reciente arriba.
 | Fecha      | Decisión                                                                                                                         | Motivo                                                                                                                                                  |
 |------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2026-11-22 | Smoke tras cada despliegue y rendimiento con k6 contra `staging` antes de cada release                                           | Comprobar que cada despliegue está vivo y detectar regresiones de rendimiento sin cargar `prod` ni gastar la cuota gratuita                             |
+| 2026-11-23 | Spring Boot 4.2 (desde 4.1.2) | La 4.2.0 ya es estable; mejor subir antes de escribir código de negocio |
 | 2026-11-23 | Contrato OpenAPI de la fase 1: `GET /news/by-slug/{slug}`, `GET /news/{id}`, `GET /competitions`, `GET /matches/{id}`, `/matches` paginado, 20 por página e imágenes de 5 MB | OpenAPI no admite `/news/{slug}` y `/news/{id}` a la vez, y editar por slug es frágil; detalle en `docs/05-api/README.md` |
 | 2026-11-22 | Bloque A de la fase 0 terminado: CI con 4 comprobaciones obligatorias y rulesets en `main` y `develop` | Desde aquí nada entra en esas ramas sin PR y CI en verde; Spotless, Checkstyle y Husky siguen como issues aparte |
 | 2026-11-16 | `develop` como rama por defecto en GitHub | `Closes #N` solo cierra issues al fusionar en la rama por defecto, y todos los PRs del día a día van a `develop` |
