@@ -17,7 +17,7 @@ En Windows se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 | --- | --- |
 | `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev` | Arranca la API en local (antes, `docker compose up -d` en la raíz) |
 | `./mvnw test` | Tests unitarios |
-| `./mvnw verify` | Tests unitarios y de integración, formato (Spotless) y Javadoc de los servicios (Checkstyle); es lo que ejecuta la CI |
+| `./mvnw verify` | Tests unitarios y de integración, cobertura (JaCoCo, informe en `target/site/jacoco/index.html`), formato (Spotless) y Javadoc de los servicios (Checkstyle); es lo que ejecuta la CI |
 | `./mvnw spotless:apply` | Formatea todo el código Java con google-java-format |
 | `./mvnw spotless:check` | Solo comprueba el formato |
 | `./mvnw checkstyle:check` | Solo comprueba el Javadoc de los servicios |

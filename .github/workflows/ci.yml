@@ -43,6 +43,19 @@ jobs:
           cache: maven
       # Tests unitarios (Surefire) e integración con Testcontainers (Failsafe); el runner trae Docker
       - run: ./mvnw -B -ntp verify
+      # Cobertura (RNF-33): tabla en el resumen del job e informe HTML como artifact, aunque fallen los tests
+      - name: Resumen de cobertura
+        if: ${{ !cancelled() }}
+        working-directory: .
+        run: python3 .github/scripts/jacoco-summary.py
+      - name: Informe de cobertura
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco/
+          if-no-files-found: warn
+          retention-days: 14
 
   frontend-lint:
     runs-on: ubuntu-latest

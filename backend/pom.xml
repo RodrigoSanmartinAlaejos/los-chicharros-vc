@@ -29,6 +29,7 @@
     <google-java-format.version>2.0.0</google-java-format.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <checkstyle.version>14.4.0</checkstyle.version>
+    <jacoco-maven-plugin.version>0.8.16</jacoco-maven-plugin.version>
   </properties>
 
   <dependencies>
@@ -98,6 +99,27 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <!-- Cobertura: el agente mide los tests unitarios y de integración; el informe se genera en verify -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <!-- Formato: google-java-format; spotless:check en la fase verify, spotless:apply lo corrige -->
       <plugin>
