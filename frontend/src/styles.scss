@@ -1,1 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
+// Estilos globales: tokens, fuentes y base. Ver docs/07-desarrollo/reglas-tecnicas.md («HTML y SCSS»).
+@use 'styles/tokens';
+@use 'styles/fonts';
+@use 'styles/base';
