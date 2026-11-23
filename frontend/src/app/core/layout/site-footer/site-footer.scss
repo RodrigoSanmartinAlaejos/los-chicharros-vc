@@ -1,0 +1,48 @@
+@use '../../../../styles/tokens' as *;
+
+.site-footer {
+  margin-top: var(--space-7);
+  background: var(--color-primary);
+  color: var(--color-background);
+  font-size: var(--font-size-small);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+
+  @include from($breakpoint-md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.site-footer__copy {
+  margin: 0;
+}
+
+.site-footer__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__link {
+  color: var(--color-background);
+}
+
+.site-footer__link:hover {
+  color: var(--color-accent);
+}
+
+:focus-visible {
+  outline-color: var(--color-accent);
+}

@@ -1,12 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SiteFooter } from './core/layout/site-footer/site-footer';
+import { SiteHeader } from './core/layout/site-header/site-header';
 
+/** Estructura común de la web pública: cabecera, contenido y pie. */
 @Component({
-  imports: [RouterOutlet],
   selector: 'cv-root',
-  styleUrl: './app.scss',
+  imports: [RouterOutlet, SiteHeader, SiteFooter],
   templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
-export class App {
-  protected readonly title = signal('frontend');
-}
+export class App {}

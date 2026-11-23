@@ -1,0 +1,47 @@
+<header class="site-header">
+  <div class="site-header__bar">
+    <a class="site-header__brand" routerLink="/" (click)="closeMenu()">
+      <img class="site-header__crest" src="escudo.svg" alt="" width="40" height="48" />
+      <span class="site-header__name">Los Chicharros V.C.</span>
+    </a>
+
+    <button
+      type="button"
+      class="site-header__toggle"
+      aria-controls="main-nav"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="toggleMenu()"
+    >
+      <span class="visually-hidden">{{ menuOpen() ? 'Cerrar menú' : 'Abrir menú' }}</span>
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+        @if (menuOpen()) {
+          <path d="M6 6l12 12M18 6L6 18" />
+        } @else {
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        }
+      </svg>
+    </button>
+
+    <nav
+      id="main-nav"
+      class="site-header__nav"
+      [class.site-header__nav--open]="menuOpen()"
+      aria-label="Menú principal"
+    >
+      <ul class="site-header__list">
+        @for (item of navItems; track item.path) {
+          <li>
+            <a
+              class="site-header__link"
+              [routerLink]="item.path"
+              routerLinkActive="site-header__link--active"
+              ariaCurrentWhenActive="page"
+              (click)="closeMenu()"
+              >{{ item.label }}</a
+            >
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
