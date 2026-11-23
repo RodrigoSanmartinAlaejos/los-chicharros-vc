@@ -39,7 +39,7 @@ flowchart LR
     B(["Navegador"])
     subgraph Render
         FE["Frontend<br/>Angular 22 con SSR<br/>proceso Node"]
-        API["API<br/>Spring Boot 4.1, Java 25<br/>imagen Docker"]
+        API["API<br/>Spring Boot 4.2, Java 25<br/>imagen Docker"]
     end
     DB[("TiDB Cloud Starter<br/>club_prod · club_staging<br/>(MySQL 8.4 en local)")]
     subgraph GitHub
@@ -58,7 +58,7 @@ flowchart LR
 | Contenedor | Tecnología | Responsabilidad |
 | --- | --- | --- |
 | Frontend | Angular 22 con SSR en Node 24, en Render | Renderizar las páginas públicas en el servidor, servir la aplicación y hacer de proxy de `/api` |
-| API | Spring Boot 4.1 con Java 25, imagen Docker en Render | Lógica de negocio, seguridad, validación y acceso a datos |
+| API | Spring Boot 4.2 con Java 25, imagen Docker en Render | Lógica de negocio, seguridad, validación y acceso a datos |
 | Base de datos | TiDB Cloud Starter (`staging` y `prod`); MySQL 8.4 en local y en los tests | Guardar los datos; el esquema solo cambia con Flyway |
 | GitHub Actions | Workflows del repositorio | CI en cada PR, migraciones y despliegue con aprobación manual |
 

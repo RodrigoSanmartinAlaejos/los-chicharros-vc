@@ -15,7 +15,7 @@ Se usan versiones con soporte en el momento de crear el repositorio y se fijan d
 | Herramienta | Versión | Dónde se fija |
 | --- | --- | --- |
 | Java | 25 (LTS) | `java.version` en el `pom.xml` |
-| Spring Boot | 4.1.x (subir a 4.2 cuando sea estable) | `spring-boot-starter-parent` en el `pom.xml` |
+| Spring Boot | 4.2.x | `spring-boot-starter-parent` en el `pom.xml` |
 | Maven | La del wrapper | `./mvnw`, nunca el Maven instalado en el equipo |
 | MySQL | 8.4 | Imagen de Docker Compose y de Testcontainers |
 | Angular | 22.x, con SSR | `package.json` |
@@ -201,7 +201,7 @@ public MatchResponse registerResult(Long matchId, RegisterResultRequest request)
 
 ## Java y Spring Boot
 
-Java 25 y Spring Boot 4.1 con Google Java Style, paquetes por funcionalidad y la lógica de negocio siempre en los servicios.
+Java 25 y Spring Boot 4.2 con Google Java Style, paquetes por funcionalidad y la lógica de negocio siempre en los servicios.
 
 **Estructura**
 
@@ -477,4 +477,5 @@ La documentación se escribe en español, en Markdown, y se revisa en los PRs co
 - [x] **Comentarios del código.** Decidido el 16 de noviembre de 2026: en español, explicando el porqué; Javadoc y TSDoc obligatorios en los servicios, comprobados en la CI con Checkstyle y `eslint-plugin-jsdoc`.
 - [x] **Smoke y rendimiento.** Decidido el 22 de noviembre de 2026: smoke con `curl` en GitHub Actions después de cada despliegue, y rendimiento con k6 solo contra `staging`, a mano antes de cada release; detalle en la [guía de tests](guia-tests.md).
 - [x] **Rama por defecto en GitHub.** Decidido el 16 de noviembre de 2026: `develop`, porque `Closes #<issue>` solo cierra issues al fusionar en la rama por defecto y todos los PRs del día a día van a `develop`.
+- [x] **Spring Boot 4.2.** Decidido el 23 de noviembre de 2026: se sube de 4.1.2 a 4.2.0 (PR #36 de Dependabot) al ser ya estable, antes de empezar el código de negocio.
 - [ ] **Prefijo de los selectores Angular** (`cv-` es provisional; el nombre del club, Los Chicharros V.C., también lo es).
