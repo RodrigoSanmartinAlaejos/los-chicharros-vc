@@ -9,6 +9,26 @@ probar en [docs/07-desarrollo/guia-tests.md](../docs/07-desarrollo/guia-tests.md
 - JDK 25
 - Docker en marcha (los tests de integración levantan MySQL con Testcontainers)
 
+## Sesión y administrador inicial
+
+La API necesita tres variables más en el `.env` de la raíz (ver `.env.example`):
+
+| Variable | Para qué |
+| --- | --- |
+| `JWT_SECRET` | Clave con la que se firman los access tokens. Al menos 32 caracteres aleatorios; si falta o es corta, la API no arranca |
+| `ADMIN_EMAIL` | Email del administrador inicial |
+| `ADMIN_PASSWORD` | Su contraseña, de 12 caracteres o más |
+
+Al arrancar, si no hay ningún administrador, la API lo crea con esos datos (contraseña cifrada con BCrypt). Si ya existe, no lo toca: cambiar las variables después no cambia la contraseña.
+
+Para generar el secreto en PowerShell:
+
+```powershell
+$b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+O en Linux y macOS: `openssl rand -base64 48`.
+
 ## Comandos
 
 En Windows se usa `.\mvnw.cmd` en lugar de `./mvnw`.

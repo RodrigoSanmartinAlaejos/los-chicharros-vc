@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @Import({
   TestcontainersConfiguration.class,
+  AuthTokens.class,
   DatabaseCleaner.class,
   TestCurrentUser.class,
   TempDirImageStorage.class,
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 public abstract class AbstractIntegrationTest {
 
   @Autowired protected MockMvc mockMvc;
+  @Autowired protected AuthTokens authTokens;
   @Autowired protected TestCurrentUser currentUser;
   @Autowired protected RecordingEmailSender emailSender;
   @Autowired private DatabaseCleaner databaseCleaner;

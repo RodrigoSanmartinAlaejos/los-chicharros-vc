@@ -1,17 +1,27 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 import { AdminLayout } from './admin-layout';
 
 @Component({ template: '' })
 class Empty {}
 
 describe('AdminLayout', () => {
-  async function render() {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdminLayout],
-      providers: [provideRouter([{ path: '**', component: Empty }])],
+      providers: [
+        provideRouter([{ path: '**', component: Empty }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
+  });
+
+  async function render() {
     const fixture = TestBed.createComponent(AdminLayout);
     await fixture.whenStable();
     return fixture;
@@ -41,5 +51,25 @@ describe('AdminLayout', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     await fixture.whenStable();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('muestra quién tiene la sesión y la cierra', async () => {
+    const auth = TestBed.inject(AuthService);
+    auth.login('admin@loschicharros.example', 'secreta').subscribe();
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/v1/auth/login')
+      .flush({ accessToken: 'token', expiresIn: 900 });
+    const fixture = await render();
+    const page = fixture.nativeElement as HTMLElement;
+
+    expect(page.querySelector('.admin__session-email')?.textContent).toBe(
+      'admin@loschicharros.example',
+    );
+
+    (page.querySelector('.admin__logout') as HTMLButtonElement).click();
+    await fixture.whenStable();
+
+    expect(auth.isAuthenticated()).toBe(false);
+    expect(TestBed.inject(Router).url).toBe('/login');
   });
 });

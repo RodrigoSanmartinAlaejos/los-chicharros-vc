@@ -1,10 +1,11 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 import { ADMIN_NAV } from '../navigation';
 
 /**
  * Estructura del panel de gestión (wireframes 08 y 10): menú lateral fijo en escritorio y barra con
- * menú desplegable en móvil. El bloque de sesión llega con el login (sprint 2).
+ * menú desplegable en móvil. Abajo, quién tiene la sesión y el botón para cerrarla.
  */
 @Component({
   selector: 'cv-admin-layout',
@@ -15,7 +16,15 @@ import { ADMIN_NAV } from '../navigation';
 })
 export class AdminLayout {
   protected readonly navItems = ADMIN_NAV;
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly menuOpen = signal(false);
+  protected readonly email = this.auth.email;
+
+  protected logout(): void {
+    this.auth.logout();
+    void this.router.navigateByUrl('/login');
+  }
 
   protected toggleMenu(): void {
     this.menuOpen.update((open) => !open);

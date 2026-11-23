@@ -14,8 +14,10 @@ import com.loschicharros.api.support.AbstractIntegrationTest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 /** CRUD de instalaciones (issue #59, H15). */
 class VenueControllerIT extends AbstractIntegrationTest {
@@ -32,7 +34,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
     // Dado
     mockMvc
         .perform(
-            post(VENUES)
+            adminPost(VENUES)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"name\":\"Polideportivo La Marina\",\"address\":\"Calle La Marina, 3\"}"))
@@ -40,7 +42,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
 
     // Cuando
     mockMvc
-        .perform(post(VENUES).contentType(MediaType.APPLICATION_JSON).content(PUERTO))
+        .perform(adminPost(VENUES).contentType(MediaType.APPLICATION_JSON).content(PUERTO))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", Matchers.matchesPattern(".*/api/v1/venues/\\d+")))
         .andExpect(jsonPath("$.latitude").value(28.4682))
@@ -61,7 +63,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
     var id = create(PUERTO);
     mockMvc
         .perform(
-            put(VENUES + "/" + id)
+            adminPut(VENUES + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Pabellón del Puerto\",\"address\":\"Avenida Marítima, 14\"}"))
         .andExpect(status().isOk())
@@ -73,7 +75,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
   void shouldRejectCoordinatesOutOfRange() throws Exception {
     mockMvc
         .perform(
-            post(VENUES)
+            adminPost(VENUES)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"X\",\"address\":\"Y\",\"latitude\":91,\"longitude\":-181}"))
         .andExpect(status().isBadRequest())
@@ -86,7 +88,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
   void shouldReturnConflictWhenNameExists() throws Exception {
     create(PUERTO);
     mockMvc
-        .perform(post(VENUES).contentType(MediaType.APPLICATION_JSON).content(PUERTO))
+        .perform(adminPost(VENUES).contentType(MediaType.APPLICATION_JSON).content(PUERTO))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail").value("Ya existe la instalación Pabellón del Puerto"));
   }
@@ -94,7 +96,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
   @Test
   void shouldDeleteVenue() throws Exception {
     var id = create(PUERTO);
-    mockMvc.perform(delete(VENUES + "/" + id)).andExpect(status().isNoContent());
+    mockMvc.perform(adminDelete(VENUES + "/" + id)).andExpect(status().isNoContent());
     mockMvc.perform(get(VENUES)).andExpect(jsonPath("$", hasSize(0)));
   }
 
@@ -103,7 +105,7 @@ class VenueControllerIT extends AbstractIntegrationTest {
     var id = create(PUERTO);
     jdbc.update("INSERT INTO dependency_probes (venue_id) VALUES (?)", id);
     mockMvc
-        .perform(delete(VENUES + "/" + id))
+        .perform(adminDelete(VENUES + "/" + id))
         .andExpect(status().isConflict())
         .andExpect(
             jsonPath("$.detail")
@@ -115,11 +117,24 @@ class VenueControllerIT extends AbstractIntegrationTest {
   private long create(String json) throws Exception {
     var response =
         mockMvc
-            .perform(post(VENUES).contentType(MediaType.APPLICATION_JSON).content(json))
+            .perform(adminPost(VENUES).contentType(MediaType.APPLICATION_JSON).content(json))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
             .getContentAsString();
     return ((Number) JsonPath.read(response, "$.id")).longValue();
+  }
+
+  /** Las escrituras son solo del administrador: cada una lleva su token. */
+  private MockHttpServletRequestBuilder adminPost(String url) {
+    return post(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
+  }
+
+  private MockHttpServletRequestBuilder adminPut(String url) {
+    return put(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
+  }
+
+  private MockHttpServletRequestBuilder adminDelete(String url) {
+    return delete(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
   }
 }

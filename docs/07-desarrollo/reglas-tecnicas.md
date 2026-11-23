@@ -209,6 +209,8 @@ Java 25 y Spring Boot 4.2 con Google Java Style, paquetes por funcionalidad y la
 backend/src/main/java/com/<club>/api/
 ├── common/        Errores, configuración, auditoría, utilidades compartidas
 ├── security/      JWT, filtros, configuración de Spring Security
+├── auth/          Login y administrador inicial
+├── users/         Cuentas (User) y su repositorio
 ├── storage/       ImageStorage y sus implementaciones (local, Cloudinary)
 ├── mail/          EmailSender y sus implementaciones (Mailpit, Brevo)
 ├── news/

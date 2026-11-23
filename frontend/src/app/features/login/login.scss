@@ -1,0 +1,63 @@
+:host {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+}
+
+.login:focus {
+  outline: none;
+}
+
+.login__crest {
+  width: 5rem;
+  margin-bottom: var(--space-5);
+}
+
+.login__title {
+  margin-bottom: var(--space-2);
+}
+
+.login__subtitle {
+  margin-bottom: var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.login__card {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  text-align: left;
+}
+
+.login__error {
+  margin: 0;
+  color: var(--color-error);
+}
+
+.login__error:empty {
+  display: none;
+}
+
+.login__submit {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+.login__back {
+  margin-top: var(--space-5);
+  color: var(--color-text-secondary);
+}

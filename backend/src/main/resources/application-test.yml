@@ -4,3 +4,10 @@ spring:
     clean-disabled: false
     # db/testmigration solo existe en src/test: crea las tablas de las clases de apoyo de los tests
     locations: classpath:db/migration,classpath:db/testmigration
+app:
+  # Solo para los tests: nunca se usa fuera de ellos
+  jwt:
+    secret: secreto-de-los-tests-que-no-sirve-en-ningun-otro-sitio
+  admin:
+    email: admin@loschicharros.test
+    password: contrasena-de-los-tests

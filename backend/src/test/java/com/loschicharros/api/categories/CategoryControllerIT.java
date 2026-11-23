@@ -14,8 +14,10 @@ import com.loschicharros.api.support.AbstractIntegrationTest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 /** CRUD de categorías (issue #59, H15). Las diez del catálogo las carga la migración V4_1. */
 class CategoryControllerIT extends AbstractIntegrationTest {
@@ -41,7 +43,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
   void shouldCreateCategoryWithLocation() throws Exception {
     mockMvc
         .perform(
-            post(CATEGORIES)
+            adminPost(CATEGORIES)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body("Benjamín", "MIXED", 0)))
         .andExpect(status().isCreated())
@@ -58,7 +60,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
     var id = create("Benjamín", "MIXED", 0);
     mockMvc
         .perform(
-            put(CATEGORIES + "/" + id)
+            adminPut(CATEGORIES + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body("Benjamín", "FEMALE", 11)))
         .andExpect(status().isOk())
@@ -70,7 +72,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
   void shouldReturnConflictWhenNameAndGenderExist() throws Exception {
     mockMvc
         .perform(
-            post(CATEGORIES)
+            adminPost(CATEGORIES)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body("Cadete", "FEMALE", 20)))
         .andExpect(status().isConflict())
@@ -81,7 +83,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
   void shouldRejectInvalidBody() throws Exception {
     mockMvc
         .perform(
-            post(CATEGORIES)
+            adminPost(CATEGORIES)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\",\"gender\":\"MALE\",\"sortOrder\":-1}"))
         .andExpect(status().isBadRequest())
@@ -93,7 +95,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
   @Test
   void shouldDeleteCategory() throws Exception {
     var id = create("Benjamín", "MIXED", 0);
-    mockMvc.perform(delete(CATEGORIES + "/" + id)).andExpect(status().isNoContent());
+    mockMvc.perform(adminDelete(CATEGORIES + "/" + id)).andExpect(status().isNoContent());
     mockMvc.perform(get(CATEGORIES)).andExpect(jsonPath("$", hasSize(10)));
   }
 
@@ -105,7 +107,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
 
     // Cuando / Entonces
     mockMvc
-        .perform(delete(CATEGORIES + "/" + id))
+        .perform(adminDelete(CATEGORIES + "/" + id))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail").value("No se puede borrar la categoría: tiene equipos"));
   }
@@ -113,7 +115,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
   @Test
   void shouldReturnNotFoundWhenDeletingMissingCategory() throws Exception {
     mockMvc
-        .perform(delete(CATEGORIES + "/999"))
+        .perform(adminDelete(CATEGORIES + "/999"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.detail").value("No existe categoría con id 999"));
   }
@@ -122,7 +124,7 @@ class CategoryControllerIT extends AbstractIntegrationTest {
     var response =
         mockMvc
             .perform(
-                post(CATEGORIES)
+                adminPost(CATEGORIES)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body(name, gender, sortOrder)))
             .andExpect(status().isCreated())
@@ -135,5 +137,18 @@ class CategoryControllerIT extends AbstractIntegrationTest {
   private static String body(String name, String gender, int sortOrder) {
     return "{\"name\":\"%s\",\"gender\":\"%s\",\"sortOrder\":%d}"
         .formatted(name, gender, sortOrder);
+  }
+
+  /** Las escrituras son solo del administrador: cada una lleva su token. */
+  private MockHttpServletRequestBuilder adminPost(String url) {
+    return post(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
+  }
+
+  private MockHttpServletRequestBuilder adminPut(String url) {
+    return put(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
+  }
+
+  private MockHttpServletRequestBuilder adminDelete(String url) {
+    return delete(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
   }
 }
