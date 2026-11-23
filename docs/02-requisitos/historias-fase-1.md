@@ -68,7 +68,7 @@ Como **visitante** quiero **leer una noticia completa y compartirla con una buen
 
 **MoSCoW:** Must · **Puntos:** 3
 
-**Diseño:** Página `/noticias/{slug}`; `GET /api/v1/news/{slug}`; Markdown convertido y saneado en el backend; Open Graph.
+**Diseño:** Página `/noticias/{slug}`; `GET /api/v1/news/by-slug/{slug}`; Markdown convertido y saneado en el backend; Open Graph.
 
 **Criterios de aceptación**
 
@@ -96,7 +96,7 @@ Como **familiar o aficionado** quiero **ver los próximos partidos y filtrarlos 
 
 **MoSCoW:** Must · **Puntos:** 5
 
-**Diseño:** Página `/calendario`; `GET /api/v1/matches?teamId=&from=&to=`.
+**Diseño:** Página `/calendario`; `GET /api/v1/matches?teamId=&venueId=&from=&to=`.
 
 **Criterios de aceptación**
 
@@ -110,7 +110,7 @@ Como **familiar o aficionado** quiero **ver la clasificación de cada competici�
 
 **MoSCoW:** Must · **Puntos:** 5
 
-**Diseño:** Página `/clasificacion/{competicion}`; `GET /api/v1/competitions/{id}/standings`, `GET /api/v1/competitions/{id}/matchdays`.
+**Diseño:** Página `/clasificacion/{competicion}`; `GET /api/v1/competitions`, `GET /api/v1/competitions/{id}/standings`, `GET /api/v1/competitions/{id}/matchdays`.
 
 **Criterios de aceptación**
 

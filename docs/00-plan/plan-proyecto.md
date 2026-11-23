@@ -131,9 +131,10 @@ Estados de un partido (`status`): `SCHEDULED`, `IN_PROGRESS`, `FINISHED`, `POSTP
 | Método                  | Ruta                                                                                                  | Acceso                                               |
 |-------------------------|-------------------------------------------------------------------------------------------------------|------------------------------------------------------|
 | GET                     | `/api/v1/news?type=&page=`                                                                            | Público                                              |
-| GET                     | `/api/v1/news/{slug}`                                                                                 | Público                                              |
+| GET                     | `/api/v1/news/by-slug/{slug}`                                                                         | Público                                              |
 | GET                     | `/api/v1/teams`, `/api/v1/teams/{id}`                                                                 | Público                                              |
-| GET                     | `/api/v1/matches?teamId=&from=&to=`                                                                   | Público                                              |
+| GET                     | `/api/v1/matches?teamId=&venueId=&from=&to=&status=&page=`, `/api/v1/matches/{id}`                    | Público                                              |
+| GET                     | `/api/v1/competitions?seasonId=&categoryId=`, `/api/v1/competitions/{id}`                             | Público                                              |
 | GET                     | `/api/v1/competitions/{id}/standings`                                                                 | Público                                              |
 | GET                     | `/api/v1/competitions/{id}/matchdays`                                                                 | Público                                              |
 | POST                    | `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`                                   | Público / autenticado                                |
@@ -144,6 +145,7 @@ Estados de un partido (`status`): `SCHEDULED`, `IN_PROGRESS`, `FINISHED`, `POSTP
 | PUT                     | `/api/v1/competitions/{id}/standings` (desaparece en la fase 3)                                       | Admin                                                |
 | GET                     | `/api/v1/people?search=&page=`                                                                        | Admin                                                |
 | GET                     | `/api/v1/news?status=draft` (borrador = sin publishedAt; publicar y retirar con PATCH de publishedAt) | Admin (desde la fase 2, también comunicación)        |
+| GET                     | `/api/v1/news/{id}` (incluye borradores y el cuerpo en Markdown)                                      | Admin (desde la fase 2, también comunicación)        |
 | GET                     | `/actuator/health`                                                                                    | Público (solo estado)                                |
 
 Las rutas de gestión son las del propio recurso, protegidas por rol; `/api/v1/admin/...` queda solo para la configuración que únicamente toca el administrador.
@@ -446,6 +448,7 @@ Anoto aquí cada decisión importante, la más reciente arriba.
 | Fecha      | Decisión                                                                                                                         | Motivo                                                                                                                                                  |
 |------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2026-11-22 | Smoke tras cada despliegue y rendimiento con k6 contra `staging` antes de cada release                                           | Comprobar que cada despliegue está vivo y detectar regresiones de rendimiento sin cargar `prod` ni gastar la cuota gratuita                             |
+| 2026-11-23 | Contrato OpenAPI de la fase 1: `GET /news/by-slug/{slug}`, `GET /news/{id}`, `GET /competitions`, `GET /matches/{id}`, `/matches` paginado, 20 por página e imágenes de 5 MB | OpenAPI no admite `/news/{slug}` y `/news/{id}` a la vez, y editar por slug es frágil; detalle en `docs/05-api/README.md` |
 | 2026-11-22 | Bloque A de la fase 0 terminado: CI con 4 comprobaciones obligatorias y rulesets en `main` y `develop` | Desde aquí nada entra en esas ramas sin PR y CI en verde; Spotless, Checkstyle y Husky siguen como issues aparte |
 | 2026-11-16 | `develop` como rama por defecto en GitHub | `Closes #N` solo cierra issues al fusionar en la rama por defecto, y todos los PRs del día a día van a `develop` |
 | 2026-11-12 | Migraciones desde GitHub Actions antes del deploy hook; emails por la API HTTP de Brevo; el SSR llama a la URL pública de la API | El plan gratuito de Render no tiene pre-deploy command, bloquea los puertos SMTP y no recibe tráfico de red privada                                     |
