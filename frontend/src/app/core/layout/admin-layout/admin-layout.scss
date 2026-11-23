@@ -136,8 +136,42 @@
 }
 
 .admin__footer {
+  display: grid;
+  gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   border-top: 1px solid rgb(245 241 232 / 20%);
+}
+
+.admin__session {
+  display: grid;
+  margin: 0;
+}
+
+.admin__session-label {
+  font-size: var(--font-size-small);
+  opacity: 0.8;
+}
+
+.admin__session-email {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin__logout {
+  min-height: 2.75rem;
+  border: 1px solid var(--color-background);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin__logout:hover {
+  background: var(--color-primary-hover);
 }
 
 .admin__public-link {

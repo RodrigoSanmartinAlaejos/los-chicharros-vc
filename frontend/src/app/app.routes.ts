@@ -1,16 +1,23 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 
 const comingSoon = () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon);
 
 /**
  * Rutas de la web, todas con carga diferida (reglas técnicas, regla 7 de Angular). Hay dos zonas,
- * cada una con su layout: el panel de gestión (`/gestion`) y la web pública. Las secciones marcadas
+ * cada una con su layout: el panel de gestión (`/gestion`, con su `/login`) y la web pública. Las secciones marcadas
  * como provisionales se sustituyen por su página real en su historia.
  */
 export const routes: Routes = [
   {
-    // Panel de gestión. Sin protección hasta el login (sprint 2, H09-H11)
+    path: 'login',
+    title: 'Iniciar sesión',
+    loadComponent: () => import('./features/login/login').then((m) => m.Login),
+  },
+  {
+    // Panel de gestión: solo con sesión (H09). La API vuelve a comprobar cada petición
     path: 'gestion',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./core/layout/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [

@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.loschicharros.api.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 /** Formato RFC 7807 de los errores (docs/05-api/README.md, «Errores»). */
@@ -73,7 +74,7 @@ class ApiExceptionHandlerIT extends AbstractIntegrationTest {
   @Test
   void shouldReturnNotFoundWhenRouteDoesNotExist() throws Exception {
     mockMvc
-        .perform(get("/api/v1/no-existe"))
+        .perform(get("/api/v1/no-existe").header(HttpHeaders.AUTHORIZATION, authTokens.admin()))
         .andExpect(status().isNotFound())
         .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
   }

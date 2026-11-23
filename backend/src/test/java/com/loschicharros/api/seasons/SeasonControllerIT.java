@@ -15,8 +15,10 @@ import com.loschicharros.api.support.AbstractIntegrationTest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 /** CRUD de temporadas (issue #59, H15). */
 class SeasonControllerIT extends AbstractIntegrationTest {
@@ -29,7 +31,9 @@ class SeasonControllerIT extends AbstractIntegrationTest {
   void shouldCreateSeasonWithLocation() throws Exception {
     mockMvc
         .perform(
-            post(SEASONS).contentType(MediaType.APPLICATION_JSON).content(body("2026-27", true)))
+            adminPost(SEASONS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body("2026-27", true)))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", Matchers.matchesPattern(".*/api/v1/seasons/\\d+")))
         .andExpect(jsonPath("$.id").isNumber())
@@ -43,7 +47,7 @@ class SeasonControllerIT extends AbstractIntegrationTest {
   void shouldCreateInactiveSeasonWhenActiveIsMissing() throws Exception {
     var json = "{\"name\":\"2025-26\",\"startDate\":\"2025-09-01\",\"endDate\":\"2026-06-30\"}";
     mockMvc
-        .perform(post(SEASONS).contentType(MediaType.APPLICATION_JSON).content(json))
+        .perform(adminPost(SEASONS).contentType(MediaType.APPLICATION_JSON).content(json))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.active").value(false));
   }
@@ -76,7 +80,7 @@ class SeasonControllerIT extends AbstractIntegrationTest {
     // Cuando
     mockMvc
         .perform(
-            put(SEASONS + "/" + id)
+            adminPut(SEASONS + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body("2026-27", true)))
         .andExpect(status().isOk())
@@ -91,7 +95,7 @@ class SeasonControllerIT extends AbstractIntegrationTest {
   void shouldRejectEndDateBeforeStartDate() throws Exception {
     var json = "{\"name\":\"2026-27\",\"startDate\":\"2027-06-30\",\"endDate\":\"2026-09-01\"}";
     mockMvc
-        .perform(post(SEASONS).contentType(MediaType.APPLICATION_JSON).content(json))
+        .perform(adminPost(SEASONS).contentType(MediaType.APPLICATION_JSON).content(json))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errors[0].field").value("endDate"))
         .andExpect(
@@ -101,7 +105,8 @@ class SeasonControllerIT extends AbstractIntegrationTest {
   @Test
   void shouldRejectInvalidName() throws Exception {
     mockMvc
-        .perform(post(SEASONS).contentType(MediaType.APPLICATION_JSON).content(body("2026", false)))
+        .perform(
+            adminPost(SEASONS).contentType(MediaType.APPLICATION_JSON).content(body("2026", false)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errors[0].field").value("name"))
         .andExpect(jsonPath("$.errors[0].message").value("debe tener el formato 2026-27"));
@@ -112,7 +117,9 @@ class SeasonControllerIT extends AbstractIntegrationTest {
     create("2026-27", false);
     mockMvc
         .perform(
-            post(SEASONS).contentType(MediaType.APPLICATION_JSON).content(body("2026-27", false)))
+            adminPost(SEASONS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body("2026-27", false)))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail").value("Ya existe la temporada 2026-27"));
   }
@@ -121,7 +128,7 @@ class SeasonControllerIT extends AbstractIntegrationTest {
   void shouldReturnNotFoundWhenUpdatingMissingSeason() throws Exception {
     mockMvc
         .perform(
-            put(SEASONS + "/999")
+            adminPut(SEASONS + "/999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body("2026-27", false)))
         .andExpect(status().isNotFound())
@@ -131,7 +138,7 @@ class SeasonControllerIT extends AbstractIntegrationTest {
   @Test
   void shouldDeleteSeason() throws Exception {
     var id = create("2026-27", false);
-    mockMvc.perform(delete(SEASONS + "/" + id)).andExpect(status().isNoContent());
+    mockMvc.perform(adminDelete(SEASONS + "/" + id)).andExpect(status().isNoContent());
     mockMvc.perform(get(SEASONS)).andExpect(jsonPath("$", hasSize(0)));
   }
 
@@ -143,7 +150,7 @@ class SeasonControllerIT extends AbstractIntegrationTest {
 
     // Cuando / Entonces
     mockMvc
-        .perform(delete(SEASONS + "/" + id))
+        .perform(adminDelete(SEASONS + "/" + id))
         .andExpect(status().isConflict())
         .andExpect(
             jsonPath("$.detail")
@@ -154,7 +161,9 @@ class SeasonControllerIT extends AbstractIntegrationTest {
     var response =
         mockMvc
             .perform(
-                post(SEASONS).contentType(MediaType.APPLICATION_JSON).content(body(name, active)))
+                adminPost(SEASONS)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body(name, active)))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
@@ -167,5 +176,18 @@ class SeasonControllerIT extends AbstractIntegrationTest {
     var year = Integer.parseInt(name.substring(0, 4));
     return "{\"name\":\"%s\",\"startDate\":\"%d-09-01\",\"endDate\":\"%d-06-30\",\"active\":%s}"
         .formatted(name, year, year + 1, active);
+  }
+
+  /** Las escrituras son solo del administrador: cada una lleva su token. */
+  private MockHttpServletRequestBuilder adminPost(String url) {
+    return post(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
+  }
+
+  private MockHttpServletRequestBuilder adminPut(String url) {
+    return put(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
+  }
+
+  private MockHttpServletRequestBuilder adminDelete(String url) {
+    return delete(url).header(HttpHeaders.AUTHORIZATION, authTokens.admin());
   }
 }

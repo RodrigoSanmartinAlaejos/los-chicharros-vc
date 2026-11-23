@@ -3,6 +3,7 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideClientHydration } from '@angular/platform-browser';
 import { TitleStrategy, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { routes } from './app.routes';
+import { authInterceptor } from './core/auth/auth.interceptor';
 import { apiOriginInterceptor } from './core/config/api-origin';
 import { PageTitleStrategy } from './core/page-title.strategy';
 
@@ -11,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
     provideClientHydration(),
-    provideHttpClient(withFetch(), withInterceptors([apiOriginInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, apiOriginInterceptor])),
     { provide: TitleStrategy, useClass: PageTitleStrategy },
   ],
 };

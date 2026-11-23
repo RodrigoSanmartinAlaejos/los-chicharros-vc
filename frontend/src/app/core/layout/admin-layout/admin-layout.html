@@ -45,6 +45,13 @@
       }
     </ul>
     <div class="admin__footer">
+      @if (email(); as email) {
+        <p class="admin__session">
+          <span class="admin__session-label">Sesión iniciada como</span>
+          <span class="admin__session-email">{{ email }}</span>
+        </p>
+      }
+      <button type="button" class="admin__logout" (click)="logout()">Cerrar sesión</button>
       <a class="admin__public-link" routerLink="/">Ver la web</a>
     </div>
   </nav>

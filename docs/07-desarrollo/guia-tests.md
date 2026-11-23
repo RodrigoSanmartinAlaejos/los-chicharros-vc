@@ -169,13 +169,14 @@ public class DatabaseCleaner {
 }
 ```
 
-`AuthTokens` (también un `@TestComponent`) crea un usuario con el rol pedido y devuelve un access token firmado por el mismo servicio que usa la API; llega con el login (sprint 2). Todas estas clases, junto con `TestcontainersConfiguration` (pública), viven en `src/test/java/com/loschicharros/api/support/`:
+`AuthTokens` (también un `@TestComponent`) crea usuarios y devuelve access tokens firmados por el mismo servicio que usa la API: `authTokens.admin()` da la cabecera `Authorization` de un administrador, `createUser(email, contraseña, activa)` crea una cuenta y `bearer(id, roles)` firma un token con los roles que se quieran (por ejemplo, ninguno, para probar el 403). Todas estas clases, junto con `TestcontainersConfiguration` (pública), viven en `src/test/java/com/loschicharros/api/support/`:
 
 | Clase | Para qué |
 | --- | --- |
 | `AbstractIntegrationTest` | Clase base: contexto y MySQL compartidos; antes de cada test limpia la base, el usuario actual y los emails |
 | `DatabaseCleaner` | Vacía las tablas de negocio y quita del catálogo las filas que añadieron los tests |
-| `TestCurrentUser` | Usuario de la auditoría que fija el propio test (`currentUser.set(7)`), mientras no haya login |
+| `AuthTokens` | Usuarios y access tokens para los tests de endpoints (desde #53) |
+| `TestCurrentUser` | Usuario de la auditoría: el que fije el propio test (`currentUser.set(7)`) o, si no fija ninguno, el del token de la petición |
 | `TempDirImageStorage` | `ImageStorage` que escribe en una carpeta temporal |
 | `RecordingEmailSender` | `EmailSender` que guarda los emails en memoria (`emailSender.sent()`) |
 | `probe/` | Entidad `AuditProbe` y endpoints `/test/probes` que solo existen en los tests, para probar los errores y la auditoría sin depender de un recurso real. Su tabla la crea `src/test/resources/db/testmigration/`, que solo carga el perfil `test` |
@@ -189,13 +190,13 @@ class NewsControllerIT extends AbstractIntegrationTest {
   @Test
   void shouldReturnProblemDetailWhenTitleIsBlank() throws Exception {
     // Dado
-    var token = authTokens.forRole("ADMIN");
+    var admin = authTokens.admin();
 
     // Cuando
     var result =
         mockMvc.perform(
             post("/api/v1/news")
-                .header("Authorization", "Bearer " + token)
+                .header(HttpHeaders.AUTHORIZATION, admin)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"\", \"body\": \"Ganamos 3-1.\"}"));
 
@@ -465,7 +466,7 @@ Cada punto es un issue propio:
 
 - [x] JaCoCo en el `pom.xml`, con el informe en la CI (#85)
 - [x] `AbstractIntegrationTest`, `DatabaseCleaner` y las implementaciones de prueba de `EmailSender` e `ImageStorage` (#87)
-- [ ] `AuthTokens`, con el login (sprint 2)
+- [x] `AuthTokens`, con el login (#53)
 - [ ] Workflows de la CI: `backend-build`, `backend-test`, `frontend-lint`, `frontend-test` y, para releases, `e2e`
 - [ ] Playwright: dependencia, `playwright.config.ts`, proyecto de *setup* y `login.spec.ts`
 - [ ] `scripts/smoke.sh` y `.github/workflows/smoke.yml`

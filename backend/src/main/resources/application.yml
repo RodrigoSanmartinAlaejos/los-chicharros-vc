@@ -31,6 +31,16 @@ server:
   # IP real del cliente: X-Forwarded-For solo se acepta si llega de un proxy de red interna, como el
   # servidor SSR (ADR-004)
   forward-headers-strategy: native
+app:
+  # Access tokens firmados con JWT_SECRET (al menos 32 caracteres) y válidos 15 minutos
+  jwt:
+    secret: ${JWT_SECRET:}
+    access-token-ttl: 15m
+    issuer: los-chicharros-api
+  # Administrador inicial: se crea al arrancar si no hay ninguno
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
 
 management:
   endpoints:

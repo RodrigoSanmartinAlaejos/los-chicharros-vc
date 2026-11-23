@@ -11,8 +11,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,13 +30,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  *
  * <p>Los errores de Spring MVC (JSON mal formado, ruta inexistente, método no permitido…) los
  * resuelve la clase padre; aquí se añaden los de validación con {@code errors} por campo y las
- * excepciones propias. Desde el sprint 2, los de autenticación y autorización los resuelve Spring
- * Security antes de llegar aquí.
+ * excepciones propias. Los 401 y 403 de Spring Security también acaban aquí: SecurityConfig se los
+ * pasa a este manejador para que tengan el mismo formato.
  */
 @RestControllerAdvice
 class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
   static final String VALIDATION_DETAIL = "La petición tiene campos no válidos";
+  static final String UNAUTHORIZED_DETAIL = "Tienes que iniciar sesión";
+  static final String FORBIDDEN_DETAIL = "No tienes permiso para hacer esto";
   private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
   @Override
@@ -89,6 +94,31 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
   ProblemDetail handleInvalidField(InvalidFieldException ex, HttpServletRequest request) {
     return withInstance(
         validationProblem(List.of(new FieldViolation(ex.getField(), ex.getMessage()))), request);
+  }
+
+  /** Credenciales incorrectas en el login: 401 con el mensaje de la excepción. */
+  @ExceptionHandler(UnauthorizedException.class)
+  ResponseEntity<ProblemDetail> handleUnauthorized(
+      UnauthorizedException ex, HttpServletRequest request) {
+    return unauthorized(ex.getMessage(), request);
+  }
+
+  /**
+   * Sin token, o con uno caducado, mal firmado o de otro emisor: 401. Llega desde Spring Security
+   * (SecurityConfig la pasa aquí para que tenga el mismo formato). El motivo exacto solo va al log.
+   */
+  @ExceptionHandler(AuthenticationException.class)
+  ResponseEntity<ProblemDetail> handleAuthentication(
+      AuthenticationException ex, HttpServletRequest request) {
+    log.debug("Petición sin autenticar a {}: {}", request.getRequestURI(), ex.getMessage());
+    return unauthorized(UNAUTHORIZED_DETAIL, request);
+  }
+
+  /** Con sesión pero sin el rol que pide la matriz de permisos: 403. */
+  @ExceptionHandler(AccessDeniedException.class)
+  ProblemDetail handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+    return withInstance(
+        ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, FORBIDDEN_DETAIL), request);
   }
 
   @ExceptionHandler(ResourceNotFoundException.class)
@@ -148,6 +178,16 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 Comparator.comparing(FieldViolation::field).thenComparing(FieldViolation::message))
             .toList());
     return problem;
+  }
+
+  private static ResponseEntity<ProblemDetail> unauthorized(
+      String detail, HttpServletRequest request) {
+    var problem =
+        withInstance(ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, detail), request);
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .header(HttpHeaders.WWW_AUTHENTICATE, "Bearer")
+        .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+        .body(problem);
   }
 
   private static ProblemDetail withInstance(ProblemDetail problem, HttpServletRequest request) {
