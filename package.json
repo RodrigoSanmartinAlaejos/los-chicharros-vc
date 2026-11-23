@@ -1,0 +1,16 @@
+{
+  "name": "los-chicharros-vc",
+  "private": true,
+  "description": "Herramientas del repositorio: hooks de Git con Husky y lint-staged",
+  "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": ">=24.15.0 <25"
+  },
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.2"
+  }
+}

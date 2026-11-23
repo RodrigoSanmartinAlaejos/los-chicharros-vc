@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Herramientas de la raíz (Husky y lint-staged)
+/node_modules/
+
 # Backend
 backend/target/
 
