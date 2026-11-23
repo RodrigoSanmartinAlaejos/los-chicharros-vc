@@ -8,7 +8,7 @@ Cómo se reparte el trabajo de la fase 1 (MVP público) en sprints de dos semana
 
 - Dedicación: de 5 a 10 horas por semana, es decir, de 10 a 20 horas por sprint.
 - Estimación inicial: **1 punto ≈ 1,5 horas**, así que caben **de 7 a 13 puntos por sprint**; el plan apunta a la parte alta y se recorta si no da tiempo.
-- La estimación se recalibra al cerrar el sprint 1 con la velocidad real (puntos terminados), y el plan se ajusta en la retrospectiva.
+- La estimación se recalibra con la velocidad real (puntos terminados) en la retrospectiva. Al cerrar el sprint 1 se mantuvo en 1,5 horas: los sprints 0 y 1 (21 puntos) se hicieron en dos días con mucha ayuda y no son representativos; se recalibra al cerrar el sprint 2.
 - Total de la fase: 21 historias y 15 tareas técnicas, **124 puntos** en 11 sprints.
 
 ## Sprints
@@ -36,6 +36,33 @@ El orden sigue las dependencias: primero las bases y el login, después lo que e
 - Al empezar un sprint: se escribe su objetivo en el tablero y sus issues pasan de Backlog a **Listo**.
 - Al terminarlo: demo (captura o vídeo corto), nota de qué mejorar y, si dos sprints seguidos no cumplen su objetivo, se recorta alcance de la fase en lugar de alargarla (pautas).
 
+## Cierre de cada sprint
+
+Demo y qué mejorar de cada sprint terminado. Las capturas de la demo están en `docs/assets/demos/`.
+
+### Sprint 0: herramientas de calidad y datos de ejemplo
+
+Terminado el 2026-11-23 con 8 de 8 puntos; objetivo cumplido.
+
+- **Demo:** un `.java` y un `.ts` mal formateados se corrigen solos al hacer commit (Husky y lint-staged); `mvnw verify` falla si falta formato o Javadoc; la CI publica la cobertura en el resumen del job; el generador de datos de ejemplo da los mismos CSV en Linux y en Windows.
+- **Qué mejorar:**
+  - Python no está instalado en Windows, así que los scripts de `.github/scripts/` solo se prueban en la CI: los scripts que tengan que ejecutarse en local se escriben en Node.
+  - Si Dependabot no reacciona a `@dependabot rebase`, usar `@dependabot recreate` en vez de esperar (pasó con el #36).
+
+### Sprint 1: bases del backend y del frontend
+
+Terminado el 2026-11-23 con 13 de 13 puntos; objetivo cumplido.
+
+- **Demo:** `/gestion/configuracion` con la temporada 2026-27 activa, las diez categorías y los dos pabellones de la semilla; activar otra temporada desactiva la anterior y borrar una categoría con equipos da 409 con su mensaje. Lighthouse da 100 en accesibilidad.
+
+  <img src="../assets/demos/sprint-1-configuracion-escritorio.png" width="640" alt="Demo del sprint 1: configuración del panel en escritorio">
+  <img src="../assets/demos/sprint-1-configuracion-movil.png" width="200" alt="Demo del sprint 1: configuración del panel en móvil">
+
+- **Qué mejorar:**
+  - Probar siempre el SSR compilado (`node dist/frontend/server/server.mjs`), no solo `pnpm start`: dos fallos solo aparecieron así (el `Host` no permitido sin `NG_ALLOWED_HOSTS` y el `Location` de los 201 sin puerto).
+  - Revisar la Definition of Ready al empezar el sprint y no al coger la historia: el #59 aún tenía sin marcar el diseño aunque ya estaba definido.
+  - Los estilos que se repiten (botones, campos, avisos) van en `src/styles/_controls.scss` desde el principio: cada componente tiene un límite de 4 kB de estilos.
+
 ## Tareas técnicas
 
 | Id | Tarea | Puntos | Sprint |
@@ -58,7 +85,7 @@ El orden sigue las dependencias: primero las bases y el login, después lo que e
 
 ## Decisiones
 
-- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1.
+- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos; se revisa al cerrar el sprint 2.
 - **Sprint 0** para cerrar la fase 0 con las herramientas de calidad (Spotless, Checkstyle, Husky, JaCoCo) y los datos de ejemplo antes de escribir código de negocio.
 - **Sprint y puntos como campos del tablero**, no como etiquetas: un campo de selección «Sprint» y un campo numérico «Puntos».
 - **El despliegue va al final**, en los sprints 9 y 10; hasta entonces la demo de cada sprint se hace en local. El sprint 10 es corto a propósito, para dejar margen a los arreglos de la release.
