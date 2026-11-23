@@ -1,14 +1,9 @@
 package com.loschicharros.api;
 
+import com.loschicharros.api.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
-class ApiApplicationIT {
+class ApiApplicationIT extends AbstractIntegrationTest {
 
   @Test
   void shouldStartContextWhenDatabaseIsAvailable() {}

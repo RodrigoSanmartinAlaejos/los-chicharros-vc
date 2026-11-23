@@ -147,7 +147,18 @@ public class DatabaseCleaner {
 }
 ```
 
-`AuthTokens` (también un `@TestComponent`) crea un usuario con el rol pedido y devuelve un access token firmado por el mismo servicio que usa la API. Las tres clases, junto con `TestcontainersConfiguration` (que pasa a ser pública), viven en `src/test/java/com/loschicharros/api/support/`. Un test de endpoint queda así:
+`AuthTokens` (también un `@TestComponent`) crea un usuario con el rol pedido y devuelve un access token firmado por el mismo servicio que usa la API; llega con el login (sprint 2). Todas estas clases, junto con `TestcontainersConfiguration` (pública), viven en `src/test/java/com/loschicharros/api/support/`:
+
+| Clase | Para qué |
+| --- | --- |
+| `AbstractIntegrationTest` | Clase base: contexto y MySQL compartidos; antes de cada test limpia la base, el usuario actual y los emails |
+| `DatabaseCleaner` | Vacía las tablas de negocio |
+| `TestCurrentUser` | Usuario de la auditoría que fija el propio test (`currentUser.set(7)`), mientras no haya login |
+| `TempDirImageStorage` | `ImageStorage` que escribe en una carpeta temporal |
+| `RecordingEmailSender` | `EmailSender` que guarda los emails en memoria (`emailSender.sent()`) |
+| `probe/` | Entidad `AuditProbe` y endpoints `/test/probes` que solo existen en los tests, para probar los errores y la auditoría sin depender de un recurso real. Su tabla la crea `src/test/resources/db/testmigration/`, que solo carga el perfil `test` |
+
+Un test de endpoint queda así:
 
 ```java
 class NewsControllerIT extends AbstractIntegrationTest {
@@ -430,7 +441,8 @@ Las peticiones van al frontend, como las de un visitante real: las de la API pas
 Cada punto es un issue propio:
 
 - [x] JaCoCo en el `pom.xml`, con el informe en la CI (#85)
-- [ ] `AbstractIntegrationTest`, `DatabaseCleaner`, `AuthTokens` y las implementaciones de prueba de `EmailSender` e `ImageStorage`
+- [x] `AbstractIntegrationTest`, `DatabaseCleaner` y las implementaciones de prueba de `EmailSender` e `ImageStorage` (#87)
+- [ ] `AuthTokens`, con el login (sprint 2)
 - [ ] Workflows de la CI: `backend-build`, `backend-test`, `frontend-lint`, `frontend-test` y, para releases, `e2e`
 - [ ] Playwright: dependencia, `playwright.config.ts`, proyecto de *setup* y `login.spec.ts`
 - [ ] `scripts/smoke.sh` y `.github/workflows/smoke.yml`

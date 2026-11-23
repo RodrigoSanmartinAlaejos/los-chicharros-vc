@@ -6,10 +6,17 @@ spring:
   threads:
     virtual:
       enabled: true
+  # Mensajes de validación en español sea cual sea el idioma del navegador
+  web:
+    locale: es
+    locale-resolver: fixed
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      # Las fechas con hora se guardan en UTC (diccionario de datos)
+      hibernate.jdbc.time_zone: UTC
   flyway:
     locations: classpath:db/migration
 
