@@ -15,7 +15,7 @@ Reglas generales:
 
 ```mermaid
 flowchart LR
-    V(["👤 Visitante"])
+    V(["Visitante"])
     subgraph PUB [Web pública]
         V1["Ver noticias · F1"]
         V2["Ver equipos y plantillas públicas · F1"]
@@ -33,8 +33,8 @@ El tutor hace por sus menores lo mismo que el socio hace por sí mismo.
 
 ```mermaid
 flowchart LR
-    S(["👤 Socio / jugador"])
-    T(["👤 Tutor"])
+    S(["Socio / jugador"])
+    T(["Tutor"])
     subgraph PRIV [Lo suyo o lo de sus menores]
         P1["Responder a una convocatoria · F3"]
         P2["Ver su asistencia y sus convocatorias · F3"]
@@ -56,8 +56,8 @@ El entrenador actúa solo sobre sus equipos; el coordinador, sobre todos.
 
 ```mermaid
 flowchart LR
-    E(["👤 Entrenador"])
-    C(["👤 Coordinador deportivo"])
+    E(["Entrenador"])
+    C(["Coordinador deportivo"])
     subgraph DEP [Gestión deportiva: entrenador en sus equipos, coordinador en todos]
         D1["Ver la plantilla con datos privados · F2"]
         D2["Editar dorsal y posición · F2"]
@@ -88,9 +88,9 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    M(["👤 Comunicación"])
-    TS(["👤 Tesorero"])
-    A(["👤 Administrador"])
+    M(["Comunicación"])
+    TS(["Tesorero"])
+    A(["Administrador"])
     subgraph COM [Comunicación]
         M1["Crear, editar, publicar y retirar noticias · F1"]
         M2["Subir imágenes de noticias, fotos y escudos · F1"]
