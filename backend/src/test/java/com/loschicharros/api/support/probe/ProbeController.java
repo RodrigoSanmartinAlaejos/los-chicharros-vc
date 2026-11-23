@@ -2,6 +2,7 @@ package com.loschicharros.api.support.probe;
 
 import com.loschicharros.api.common.error.ConflictException;
 import com.loschicharros.api.common.error.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import org.springframework.boot.test.context.TestComponent;
@@ -58,6 +59,11 @@ public class ProbeController {
   @GetMapping("/page")
   public String page(@RequestParam @Max(100) int size) {
     return "ok";
+  }
+
+  @GetMapping("/client-ip")
+  public String clientIp(HttpServletRequest request) {
+    return request.getRemoteAddr();
   }
 
   @GetMapping("/conflict")

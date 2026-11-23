@@ -6,6 +6,11 @@ spring:
   threads:
     virtual:
       enabled: true
+  # Imágenes de 5 MB como máximo (docs/05-api/README.md); el proxy del SSR usa el mismo total
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   # Mensajes de validación en español sea cual sea el idioma del navegador
   web:
     locale: es
@@ -22,6 +27,11 @@ spring:
 
 # Actuator: solo /actuator/health, de lectura y sin detalles (reglas técnicas, «Configuración»).
 # Lo consultan el monitor de caídas y el SSR al arrancar, para despertar la API.
+server:
+  # IP real del cliente: X-Forwarded-For solo se acepta si llega de un proxy de red interna, como el
+  # servidor SSR (ADR-004)
+  forward-headers-strategy: native
+
 management:
   endpoints:
     access:

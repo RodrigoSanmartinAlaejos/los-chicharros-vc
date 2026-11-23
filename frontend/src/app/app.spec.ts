@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Meta } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { App } from './app';
 
@@ -26,5 +27,11 @@ describe('App', () => {
     const skip = (fixture.nativeElement as HTMLElement).querySelector('a.skip-link');
 
     expect(skip?.getAttribute('href')).toBe('#contenido');
+  });
+
+  it('pide a los buscadores que no indexen la web fuera de producción', () => {
+    TestBed.createComponent(App);
+
+    expect(TestBed.inject(Meta).getTag('name="robots"')?.content).toBe('noindex, nofollow');
   });
 });

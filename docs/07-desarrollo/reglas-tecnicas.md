@@ -427,7 +427,7 @@ backend/src/main/resources/
 └── application-prod.yml      clean-disabled, logs warn, Swagger solo lectura, Cloudinary
 ```
 
-- Variables de entorno en `UPPER_SNAKE_CASE` con prefijo de servicio (más APP\_ENV, que indica el entorno en el frontend): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `API_URL`, `CLOUDINARY_URL`, `MAIL_API_KEY`, `SENTRY_DSN`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
+- Variables de entorno en `UPPER_SNAKE_CASE` con prefijo de servicio (más APP\_ENV, que indica el entorno en el frontend): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `API_URL`, `NG_ALLOWED_HOSTS`, `TRUST_PROXY`, `CLOUDINARY_URL`, `MAIL_API_KEY`, `SENTRY_DSN`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
 - En el repositorio solo va `.env.example` con todas las claves y sin valores. El `.env` real está en `.gitignore`.
 - Los secretos de `staging` y `prod` se guardan en el panel del hosting y en *GitHub Environments*, nunca en un fichero.
 - `docker-compose.yml` levanta lo necesario para `dev`: MySQL 8.4 con `club_dev` y Mailpit para ver los emails. Fija la versión de cada imagen (`mysql:8.4`, nunca `latest`).
