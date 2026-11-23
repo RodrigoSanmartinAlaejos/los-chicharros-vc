@@ -24,6 +24,14 @@ updates:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
 
+  - package-ecosystem: npm # Husky y lint-staged de la raíz
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop
