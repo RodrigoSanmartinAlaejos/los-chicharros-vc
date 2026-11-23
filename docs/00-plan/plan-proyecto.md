@@ -84,8 +84,8 @@ Son los 12 pasos de la fase de planificación de las pautas, detallados **solo p
 
 Además, para los datos de ejemplo:
 
-- [ ] Preparar noticias, jugadores, rivales, partidos y resultados ficticios (tarea T04, sprint 0)
-- [ ] Buscar imágenes libres de derechos para noticias y equipos (tarea T04, sprint 0)
+- [x] Preparar noticias, jugadores, rivales, partidos y resultados ficticios (tarea T04, sprint 0): [datos de ejemplo](../04-datos/datos-ejemplo.md)
+- [x] Buscar imágenes libres de derechos para noticias y equipos (tarea T04, sprint 0): ilustraciones propias en [`docs/assets/imagenes/`](../assets/imagenes/README.md)
 
 **Criterio de salida:** CI en verde sobre un repositorio en el que backend y frontend arrancan en local contra MySQL en Docker, y la fase 1 tiene historias priorizadas, diagrama ER, contrato de API y wireframes.
 

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-labelledby="t">
+  <title id="t">Silueta genérica: se muestra cuando no hay foto o no hay consentimiento de imagen</title>
+  <rect width="400" height="400" fill="#E6DFD0"/>
+  <circle cx="200" cy="155" r="72" fill="#8A7F6A"/>
+  <path d="M70 400 C70 300 130 250 200 250 S330 300 330 400 Z" fill="#8A7F6A"/>
+</svg>
