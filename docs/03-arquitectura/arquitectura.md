@@ -11,12 +11,12 @@ Quién usa la web y con qué servicios externos habla. Entre paréntesis, la fas
 ```mermaid
 flowchart LR
     subgraph Personas
-        V(["👤 Visitante"])
-        F(["👤 Socios y tutores (F2)"])
-        D(["👤 Entrenadores y coordinador (F2)"])
-        G(["👤 Comunicación, tesorero y administrador"])
+        V(["Visitante"])
+        F(["Socios y tutores (F2)"])
+        D(["Entrenadores y coordinador (F2)"])
+        G(["Comunicación, tesorero y administrador"])
     end
-    W["🏐 Web de Los Chicharros V.C."]
+    W["Web de Los Chicharros V.C."]
     subgraph Servicios externos
         CL["Cloudinary<br/>imágenes"]
         BR["Brevo<br/>emails (F2)"]
@@ -36,7 +36,7 @@ Las piezas que se despliegan y cómo se comunican. El navegador solo habla con e
 
 ```mermaid
 flowchart LR
-    B(["🌐 Navegador"])
+    B(["Navegador"])
     subgraph Render
         FE["Frontend<br/>Angular 22 con SSR<br/>proceso Node"]
         API["API<br/>Spring Boot 4.1, Java 25<br/>imagen Docker"]
