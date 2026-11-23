@@ -1,3 +1,4 @@
+import './server/load-env';
 import {
   AngularNodeAppEngine,
   createNodeRequestHandler,
@@ -6,24 +7,31 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
-import { wakeApi } from './wake-api';
+import { createApiProxy } from './server/api-proxy';
+import { ServerConfig, parseTrustProxy, readServerConfig } from './server/server-config';
+import { wakeApi } from './server/wake-api';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
+// La configuración se lee al usarla: si falta API_URL, el resto de la web sigue funcionando y el
+// error sale en el log y en las peticiones a la API.
+let config: ServerConfig | undefined;
+function serverConfig(): ServerConfig {
+  config ??= readServerConfig(process.env);
+  return config;
+}
+
+// IP real del cliente detrás del proxy de Render (TRUST_PROXY); en local, la de la conexión
+app.set('trust proxy', parseTrustProxy(process.env['TRUST_PROXY']));
+
+/** Proxy de la API (ADR-004). En `pnpm start` lo hace antes proxy.conf.json. */
+app.use(
+  '/api',
+  createApiProxy(() => serverConfig().apiUrl),
+);
 
 /**
  * Serve static files from /browser
@@ -51,15 +59,16 @@ app.use((req, res, next) => {
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
+  const { apiUrl, appEnv } = serverConfig();
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
     if (error) {
       throw error;
     }
 
-    console.log(`Node Express server listening on http://localhost:${port}`);
+    console.log(`Node Express server listening on http://localhost:${port} (${appEnv})`);
     // Sin await: el servidor ya atiende mientras la API despierta
-    void wakeApi(process.env['API_URL'] ?? 'http://localhost:8080');
+    void wakeApi(apiUrl);
   });
 }
 
