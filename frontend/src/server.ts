@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import { wakeApi } from './wake-api';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -57,6 +58,8 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     }
 
     console.log(`Node Express server listening on http://localhost:${port}`);
+    // Sin await: el servidor ya atiende mientras la API despierta
+    void wakeApi(process.env['API_URL'] ?? 'http://localhost:8080');
   });
 }
 
