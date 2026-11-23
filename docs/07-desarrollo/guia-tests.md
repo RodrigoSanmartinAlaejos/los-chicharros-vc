@@ -216,7 +216,7 @@ Los códigos de rol del ejemplo son orientativos: se usan los que defina la migr
 
 ## Cobertura
 
-JaCoCo se configura en el `pom.xml` (pendiente, ver el final). Genera el informe en `backend/target/site/jacoco/index.html` al ejecutar `./mvnw verify`, y la CI lo publica en el resumen del job. La meta orientativa es el 70 % en los servicios. No se escriben tests vacíos para subir el número: un test sin aserciones no cuenta.
+JaCoCo está en el `pom.xml`: mide los tests unitarios y los de integración y genera el informe en `backend/target/site/jacoco/index.html` al ejecutar `./mvnw verify`. En la CI, el job `backend-test` escribe en su resumen la cobertura total y la de cada clase `*Service` (script `.github/scripts/jacoco-summary.py`) y sube el informe HTML como artifact `jacoco-report` durante 14 días. La meta no bloquea la CI: es un aviso. La meta orientativa es el 70 % en los servicios. No se escriben tests vacíos para subir el número: un test sin aserciones no cuenta.
 
 ## Unitarios y de componentes del frontend
 
@@ -429,7 +429,7 @@ Las peticiones van al frontend, como las de un visitante real: las de la API pas
 
 Cada punto es un issue propio:
 
-- [ ] JaCoCo en el `pom.xml`, con el informe en la CI
+- [x] JaCoCo en el `pom.xml`, con el informe en la CI (#85)
 - [ ] `AbstractIntegrationTest`, `DatabaseCleaner`, `AuthTokens` y las implementaciones de prueba de `EmailSender` e `ImageStorage`
 - [ ] Workflows de la CI: `backend-build`, `backend-test`, `frontend-lint`, `frontend-test` y, para releases, `e2e`
 - [ ] Playwright: dependencia, `playwright.config.ts`, proyecto de *setup* y `login.spec.ts`
