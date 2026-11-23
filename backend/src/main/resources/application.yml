@@ -20,11 +20,23 @@ spring:
   flyway:
     locations: classpath:db/migration
 
+# Actuator: solo /actuator/health, de lectura y sin detalles (reglas técnicas, «Configuración»).
+# Lo consultan el monitor de caídas y el SSR al arrancar, para despertar la API.
 management:
   endpoints:
+    access:
+      default: none
     web:
       exposure:
         include: health
+      # Sin la página /actuator que lista los endpoints
+      discovery:
+        enabled: false
   endpoint:
     health:
+      access: read-only
       show-details: never
+      show-components: never
+      # Sin grupos liveness y readiness: no hay Kubernetes, y así la respuesta es solo {"status":"UP"}
+      probes:
+        enabled: false
