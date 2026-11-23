@@ -8,6 +8,7 @@ Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR c
 | --- | --- |
 | [Plan del proyecto](00-plan/plan-proyecto.md) | Qué se construye: fases, modelo de datos, endpoints y decisiones |
 | [Pautas del proyecto](00-plan/pautas-proyecto.md) | Cómo se trabaja: issues, ramas, PRs, documentación y Definition of Done |
+| [Plan de sprints de la fase 1](00-plan/sprints-fase-1.md) | Capacidad, sprints con su objetivo y puntos, y tareas técnicas |
 | [Visión y alcance](01-vision/vision.md) | Problema, objetivos, usuarios, alcance por fases y criterios de éxito |
 | [Ficha del club](01-vision/club.md) | Datos del club ficticio, escudo, pabellones, categorías, competiciones y rivales de ejemplo |
 | [Glosario](01-vision/glosario.md) | Términos del dominio y su nombre en el código |

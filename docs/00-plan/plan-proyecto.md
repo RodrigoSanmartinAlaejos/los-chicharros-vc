@@ -69,23 +69,23 @@ Tiene dos bloques que pueden avanzar en paralelo.
 
 Son los 12 pasos de la fase de planificación de las pautas, detallados **solo para la fase 1**. Las fases 2 a 5 se quedan a alto nivel y se detallan al llegar a cada una.
 
-- [ ] 1. Visión y alcance
-- [ ] 2. Club ficticio y glosario. Hecho: nombre provisional (Los Chicharros V.C.) y colores. Falta: escudo, categorías y competiciones de ejemplo
+- [x] 1. Visión y alcance
+- [x] 2. Club ficticio y glosario: ficha del club con escudo, categorías y competiciones de ejemplo, y glosario
 - [x] 3. Roles y permisos: matriz de permisos (primera versión, 2026-11-10)
-- [ ] 4. Casos de uso por rol
-- [ ] 5. Historias de usuario de la fase 1 con criterios de aceptación y prioridad MoSCoW
-- [ ] 6. Requisitos no funcionales
-- [ ] 7. Modelo de datos: diagrama ER completo a alto nivel y diccionario de datos de la fase 1
-- [ ] 8. Arquitectura: diagramas C4
-- [ ] 9. Contrato OpenAPI inicial de la fase 1
-- [ ] 10. Flujos principales de la fase 1 (login del admin, publicar noticia, introducir resultado)
-- [ ] 11. Wireframes de las pantallas clave y tipografía. La paleta ya está elegida: Atlántico y arena ([paleta-colores.md](../02-requisitos/paleta-colores.md))
-- [ ] 12. Plan de sprints de la fase 1
+- [x] 4. Casos de uso por rol
+- [x] 5. Historias de usuario de la fase 1 con criterios de aceptación y prioridad MoSCoW
+- [x] 6. Requisitos no funcionales
+- [x] 7. Modelo de datos: diagrama ER completo a alto nivel y diccionario de datos de la fase 1
+- [x] 8. Arquitectura: diagramas C4
+- [x] 9. Contrato OpenAPI inicial de la fase 1
+- [x] 10. Flujos principales de la fase 1 (login del admin, publicar noticia, introducir resultado)
+- [x] 11. Wireframes de las pantallas clave y tipografía. La paleta ya está elegida: Atlántico y arena ([paleta-colores.md](../02-requisitos/paleta-colores.md))
+- [x] 12. Plan de sprints de la fase 1
 
 Además, para los datos de ejemplo:
 
-- [ ] Preparar noticias, jugadores, rivales, partidos y resultados ficticios
-- [ ] Buscar imágenes libres de derechos para noticias y equipos
+- [ ] Preparar noticias, jugadores, rivales, partidos y resultados ficticios (tarea T04, sprint 0)
+- [ ] Buscar imágenes libres de derechos para noticias y equipos (tarea T04, sprint 0)
 
 **Criterio de salida:** CI en verde sobre un repositorio en el que backend y frontend arrancan en local contra MySQL en Docker, y la fase 1 tiene historias priorizadas, diagrama ER, contrato de API y wireframes.
 
