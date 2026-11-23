@@ -1,0 +1,2320 @@
+# Contrato OpenAPI de la fase 1. Se genera la documentación interactiva en /swagger-ui.
+openapi: 3.1.0
+info:
+  title: API de Los Chicharros V.C. (fase 1)
+  version: 0.1.0
+  description: 'Contrato de la API REST de la fase 1 (MVP público). Rutas en inglés y bajo `/api/v1`, JSON en `camelCase`,
+    fechas en ISO 8601 y errores RFC 7807. Las convenciones están en `docs/05-api/README.md` y los permisos en `docs/02-requisitos/matriz-permisos.md`.
+    En la fase 1 solo existe el administrador: toda operación con `bearerAuth` exige ese rol.'
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+- url: /api/v1
+  description: 'Relativa al frontend: el navegador siempre llama a través del proxy del SSR'
+tags:
+- name: Autenticación
+- name: Noticias
+- name: Equipos
+- name: Personas
+- name: Competiciones
+- name: Partidos
+- name: Configuración
+security: []
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Autenticación
+      summary: Iniciar sesión
+      description: Devuelve un access token de 15 minutos y pone el refresh token en una cookie `HttpOnly`. Tras
+        5 fallos seguidos para un email desde una IP, esa combinación se bloquea 15 minutos; el error es siempre
+        el mismo 401 genérico.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/RefreshCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /auth/refresh:
+    post:
+      tags:
+      - Autenticación
+      summary: Renovar el access token
+      description: Usa el refresh token de la cookie, lo rota y devuelve uno nuevo. Si llega uno ya usado, se revocan
+        todas las sesiones del usuario. La sesión termina tras 2 horas sin renovar o 7 días después del login.
+      security:
+      - refreshCookie: []
+      responses:
+        '200':
+          description: Token renovado
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/RefreshCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /auth/logout:
+    post:
+      tags:
+      - Autenticación
+      summary: Cerrar sesión
+      description: Revoca el refresh token y borra la cookie.
+      security:
+      - refreshCookie: []
+      responses:
+        '204':
+          description: Sin contenido
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /news:
+    get:
+      tags:
+      - Noticias
+      summary: Listar noticias
+      description: Sin sesión devuelve solo las publicadas, de la más reciente a la más antigua. `status=draft`
+        (solo administrador) devuelve los borradores.
+      security:
+      - {}
+      - bearerAuth: []
+      parameters:
+      - name: type
+        in: query
+        schema:
+          $ref: '#/components/schemas/NewsType'
+      - name: featured
+        in: query
+        schema:
+          type: boolean
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - published
+          - draft
+          default: published
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsSummaryPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+      - Noticias
+      summary: Crear una noticia
+      description: Se crea como borrador (sin `publishedAt`). El slug se genera a partir del título.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /news/by-slug/{slug}:
+    get:
+      tags:
+      - Noticias
+      summary: Obtener una noticia publicada por su slug
+      description: El cuerpo llega en HTML ya saneado en el backend. Un borrador devuelve 404.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 170
+        example: victoria-cadete-femenino-ante-alisios
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /news/{id}:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    get:
+      tags:
+      - Noticias
+      summary: Obtener una noticia por id (panel)
+      description: Incluye borradores y el cuerpo en Markdown.
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - Noticias
+      summary: Sustituir una noticia
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+      - Noticias
+      summary: Publicar, retirar o destacar
+      description: '`publishedAt` con fecha publica; `null` retira (vuelve a borrador).'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsPatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - Noticias
+      summary: Borrar una noticia
+      description: Borrado lógico.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /news/{id}/image:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    put:
+      tags:
+      - Noticias
+      summary: Subir la imagen de una noticia
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JPG, PNG o WebP de 5 MB como máximo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+  /seasons:
+    get:
+      tags:
+      - Configuración
+      summary: Listar temporadas
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeasonResponse'
+    post:
+      tags:
+      - Configuración
+      summary: Crear una temporada
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeasonRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /seasons/{id}:
+    put:
+      tags:
+      - Configuración
+      summary: Sustituir una temporada
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeasonRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Configuración
+      summary: Borrar una temporada
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /categories:
+    get:
+      tags:
+      - Configuración
+      summary: Listar categorías
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+    post:
+      tags:
+      - Configuración
+      summary: Crear una categoría
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /categories/{id}:
+    put:
+      tags:
+      - Configuración
+      summary: Sustituir una categoría
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Configuración
+      summary: Borrar una categoría
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /venues:
+    get:
+      tags:
+      - Configuración
+      summary: Listar instalaciones
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VenueResponse'
+    post:
+      tags:
+      - Configuración
+      summary: Crear una instalación
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /venues/{id}:
+    put:
+      tags:
+      - Configuración
+      summary: Sustituir una instalación
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VenueRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Configuración
+      summary: Borrar una instalación
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /people:
+    get:
+      tags:
+      - Personas
+      summary: Listar personas (panel)
+      parameters:
+      - name: search
+        in: query
+        description: Parte del nombre o los apellidos
+        schema:
+          type: string
+          maxLength: 100
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Personas
+      summary: Crear una persona
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /people/{id}:
+    get:
+      tags:
+      - Personas
+      summary: Obtener una persona
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - Personas
+      summary: Sustituir una persona
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Personas
+      summary: Borrar una persona
+      description: Borrado lógico; se conservan sus pertenencias y resultados.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /people/{id}/photo:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    put:
+      tags:
+      - Personas
+      summary: Subir la foto de una persona
+      description: Solo se muestra en la web pública si tiene consentimiento de imagen.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JPG, PNG o WebP de 5 MB como máximo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+  /teams:
+    get:
+      tags:
+      - Equipos
+      summary: Listar equipos
+      parameters:
+      - name: seasonId
+        in: query
+        description: Por defecto, la temporada activa
+        schema:
+          type: integer
+          format: int64
+      - name: categoryId
+        in: query
+        schema:
+          type: integer
+          format: int64
+      - name: ownClub
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamSummary'
+    post:
+      tags:
+      - Equipos
+      summary: Crear un equipo
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /teams/{id}:
+    get:
+      tags:
+      - Equipos
+      summary: Obtener un equipo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      description: 'Incluye la plantilla pública: nombre e inicial del apellido, dorsal, posición y foto solo con
+        consentimiento.'
+    put:
+      tags:
+      - Equipos
+      summary: Sustituir un equipo
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Equipos
+      summary: Borrar un equipo
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /teams/{id}/crest:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    put:
+      tags:
+      - Equipos
+      summary: Subir el escudo o la foto de un equipo
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JPG, PNG o WebP de 5 MB como máximo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+  /teams/{id}/roster:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    post:
+      tags:
+      - Equipos
+      summary: Añadir una persona a la plantilla
+      description: 409 si la persona ya está con ese tipo o el dorsal está ocupado.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /teams/{id}/roster/{membershipId}:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    - name: membershipId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    patch:
+      tags:
+      - Equipos
+      summary: Cambiar dorsal o posición
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Equipos
+      summary: Quitar de la plantilla
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /competitions:
+    get:
+      tags:
+      - Competiciones
+      summary: Listar competiciones
+      parameters:
+      - name: seasonId
+        in: query
+        description: Por defecto, la temporada activa
+        schema:
+          type: integer
+          format: int64
+      - name: categoryId
+        in: query
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompetitionResponse'
+    post:
+      tags:
+      - Competiciones
+      summary: Crear una competición
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /competitions/{id}:
+    get:
+      tags:
+      - Competiciones
+      summary: Obtener una competición
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - Competiciones
+      summary: Sustituir una competición
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Competiciones
+      summary: Borrar una competición
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /competitions/{id}/standings:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    get:
+      tags:
+      - Competiciones
+      summary: Clasificación de una competición
+      description: Ordenada por puntos, partidos ganados, cociente de sets y cociente de puntos.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StandingResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - Competiciones
+      summary: Sustituir la clasificación a mano
+      description: Solo en la fase 1; desaparece en la fase 3, cuando se calcula sola.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/StandingRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StandingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /competitions/{id}/matchdays:
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    get:
+      tags:
+      - Competiciones
+      summary: Jornadas con sus partidos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MatchdayResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /matchdays:
+    post:
+      tags:
+      - Competiciones
+      summary: Crear una jornada
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchdayRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchdayResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /matchdays/{id}:
+    put:
+      tags:
+      - Competiciones
+      summary: Sustituir una jornada
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchdayRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchdayResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Competiciones
+      summary: Borrar una jornada
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+  /matches:
+    get:
+      tags:
+      - Partidos
+      summary: Listar partidos
+      parameters:
+      - name: teamId
+        in: query
+        schema:
+          type: integer
+          format: int64
+      - name: venueId
+        in: query
+        schema:
+          type: integer
+          format: int64
+      - name: from
+        in: query
+        description: Desde (incluido), ISO 8601
+        schema:
+          type: string
+          format: date
+        example: '2026-11-01'
+      - name: to
+        in: query
+        description: Hasta (incluido), ISO 8601
+        schema:
+          type: string
+          format: date
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/MatchStatus'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchPage'
+    post:
+      tags:
+      - Partidos
+      summary: Crear un partido
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchRequest'
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location:
+              description: URL del recurso creado
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /matches/{id}:
+    get:
+      tags:
+      - Partidos
+      summary: Obtener un partido
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - Partidos
+      summary: Sustituir un partido
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags:
+      - Partidos
+      summary: Borrar un partido
+      description: 409 si tiene registros que dependen de él.
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    parameters:
+    - $ref: '#/components/parameters/Id'
+    patch:
+      tags:
+      - Partidos
+      summary: Cambiar estado o marcador de sets
+      description: Para aplazar, cancelar o registrar el resultado (pasa a `FINISHED`). Uno de los dos tiene que
+        llegar a 3 sets y el otro a menos de 3.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchPatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token de 15 minutos, en la cabecera `Authorization`
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+      description: '`HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/v1/auth`'
+  headers:
+    RefreshCookie:
+      description: Refresh token nuevo
+      schema:
+        type: string
+      example: refresh_token=…; Path=/api/v1/auth; HttpOnly; Secure; SameSite=Strict
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      description: Campo y dirección
+      schema:
+        type: string
+      example: publishedAt,desc
+  responses:
+    BadRequest:
+      description: Datos o filtros no válidos; `errors` detalla cada campo
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Sin sesión, token caducado o credenciales incorrectas
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Sin permiso para esta acción
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: No existe
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Conflict:
+      description: Duplicado o con registros que dependen de él
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    PayloadTooLarge:
+      description: Fichero de más de 5 MB
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    TooManyRequests:
+      description: 'Demasiadas peticiones: más de 20 por minuto en `/auth/**`'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  schemas:
+    ProblemDetail:
+      type: object
+      description: Error RFC 7807 (`application/problem+json`).
+      required:
+      - title
+      - status
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: array
+          description: Solo en errores de validación
+          items:
+            type: object
+            required:
+            - field
+            - message
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+    PageMeta:
+      type: object
+      required:
+      - page
+      - size
+      - totalElements
+      - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 1
+          maxLength: 128
+          writeOnly: true
+    AccessTokenResponse:
+      type: object
+      required:
+      - accessToken
+      - expiresIn
+      properties:
+        accessToken:
+          type: string
+          description: JWT; se guarda solo en memoria
+        expiresIn:
+          type: integer
+          description: Segundos de validez
+          example: 900
+    NewsType:
+      type: string
+      enum:
+      - MATCH_REPORT
+      - EVENT
+      - STATEMENT
+      description: Crónica, evento o comunicado
+    NewsSummary:
+      type: object
+      required:
+      - id
+      - title
+      - slug
+      - summary
+      - type
+      - featured
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        title:
+          type: string
+        slug:
+          type: string
+        summary:
+          type: string
+        type:
+          $ref: '#/components/schemas/NewsType'
+        imageUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+        featured:
+          type: boolean
+        publishedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    NewsSummaryPage:
+      allOf:
+      - $ref: '#/components/schemas/PageMeta'
+      - type: object
+        required:
+        - content
+        properties:
+          content:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewsSummary'
+    NewsResponse:
+      allOf:
+      - $ref: '#/components/schemas/NewsSummary'
+      - type: object
+        required:
+        - contentHtml
+        properties:
+          contentHtml:
+            type: string
+            description: Cuerpo en HTML saneado
+          contentMarkdown:
+            type: string
+            description: Solo para el administrador
+    NewsRequest:
+      type: object
+      required:
+      - title
+      - summary
+      - content
+      - type
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 150
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 300
+        content:
+          type: string
+          minLength: 1
+          description: Markdown
+        type:
+          $ref: '#/components/schemas/NewsType'
+        featured:
+          type: boolean
+          default: false
+    NewsPatchRequest:
+      type: object
+      description: Solo se cambian los campos enviados.
+      properties:
+        publishedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        featured:
+          type: boolean
+    SeasonRequest:
+      type: object
+      required:
+      - name
+      - startDate
+      - endDate
+      properties:
+        name:
+          type: string
+          pattern: ^\d{4}-\d{2}$
+          example: 2026-27
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        active:
+          type: boolean
+          default: false
+    SeasonResponse:
+      allOf:
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+      - $ref: '#/components/schemas/SeasonRequest'
+    Gender:
+      type: string
+      enum:
+      - MALE
+      - FEMALE
+      - MIXED
+    CategoryRequest:
+      type: object
+      required:
+      - name
+      - gender
+      - sortOrder
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: Cadete
+        gender:
+          $ref: '#/components/schemas/Gender'
+        sortOrder:
+          type: integer
+          minimum: 0
+    CategoryResponse:
+      allOf:
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+      - $ref: '#/components/schemas/CategoryRequest'
+    VenueRequest:
+      type: object
+      required:
+      - name
+      - address
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        address:
+          type: string
+          minLength: 1
+          maxLength: 200
+        latitude:
+          type:
+          - number
+          - 'null'
+          minimum: -90
+          maximum: 90
+        longitude:
+          type:
+          - number
+          - 'null'
+          minimum: -180
+          maximum: 180
+    VenueResponse:
+      allOf:
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+      - $ref: '#/components/schemas/VenueRequest'
+    PersonRequest:
+      type: object
+      required:
+      - firstName
+      - lastName
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 60
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        birthDate:
+          type:
+          - string
+          - 'null'
+          format: date
+        imageConsent:
+          type: boolean
+          default: false
+    PersonResponse:
+      allOf:
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+          photoUrl:
+            type:
+            - string
+            - 'null'
+            format: uri
+      - $ref: '#/components/schemas/PersonRequest'
+      description: Datos completos; solo para el administrador.
+    PersonPage:
+      allOf:
+      - $ref: '#/components/schemas/PageMeta'
+      - type: object
+        required:
+        - content
+        properties:
+          content:
+            type: array
+            items:
+              $ref: '#/components/schemas/PersonResponse'
+    PublicPerson:
+      type: object
+      required:
+      - id
+      - displayName
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        displayName:
+          type: string
+          description: Nombre e inicial del apellido
+          example: Lucía M.
+        photoUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Nulo si no hay foto o no hay consentimiento de imagen
+    MembershipType:
+      type: string
+      enum:
+      - PLAYER
+      - COACH
+    MembershipRequest:
+      type: object
+      required:
+      - personId
+      - type
+      properties:
+        personId:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/MembershipType'
+        shirtNumber:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 99
+        position:
+          type:
+          - string
+          - 'null'
+          maxLength: 30
+    MembershipPatchRequest:
+      type: object
+      properties:
+        shirtNumber:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 99
+        position:
+          type:
+          - string
+          - 'null'
+          maxLength: 30
+    MembershipResponse:
+      type: object
+      required:
+      - id
+      - person
+      - type
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        person:
+          $ref: '#/components/schemas/PublicPerson'
+        type:
+          $ref: '#/components/schemas/MembershipType'
+        shirtNumber:
+          type:
+          - integer
+          - 'null'
+        position:
+          type:
+          - string
+          - 'null'
+    TeamSummary:
+      type: object
+      required:
+      - id
+      - name
+      - ownClub
+      - category
+      - seasonId
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        name:
+          type: string
+        ownClub:
+          type: boolean
+        crestUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+        category:
+          $ref: '#/components/schemas/CategoryResponse'
+        seasonId:
+          type: integer
+          format: int64
+    TeamResponse:
+      allOf:
+      - $ref: '#/components/schemas/TeamSummary'
+      - type: object
+        required:
+        - players
+        - coaches
+        properties:
+          players:
+            type: array
+            items:
+              $ref: '#/components/schemas/MembershipResponse'
+          coaches:
+            type: array
+            items:
+              $ref: '#/components/schemas/MembershipResponse'
+    TeamRequest:
+      type: object
+      required:
+      - seasonId
+      - categoryId
+      - name
+      properties:
+        seasonId:
+          type: integer
+          format: int64
+        categoryId:
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        ownClub:
+          type: boolean
+          default: false
+    CompetitionRequest:
+      type: object
+      required:
+      - seasonId
+      - categoryId
+      - name
+      properties:
+        seasonId:
+          type: integer
+          format: int64
+        categoryId:
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        federation:
+          type:
+          - string
+          - 'null'
+          maxLength: 100
+        forfeitPenaltyPoints:
+          type: integer
+          minimum: 0
+          maximum: 10
+          default: 1
+    CompetitionResponse:
+      allOf:
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+      - $ref: '#/components/schemas/CompetitionRequest'
+    StandingRequest:
+      type: object
+      required:
+      - teamId
+      - points
+      - played
+      - won
+      - lost
+      - setsWon
+      - setsLost
+      - penaltyPoints
+      properties:
+        teamId:
+          type: integer
+          format: int64
+        points:
+          type: integer
+        played:
+          type: integer
+          minimum: 0
+        won:
+          type: integer
+          minimum: 0
+        lost:
+          type: integer
+          minimum: 0
+        setsWon:
+          type: integer
+          minimum: 0
+        setsLost:
+          type: integer
+          minimum: 0
+        penaltyPoints:
+          type: integer
+          minimum: 0
+    StandingResponse:
+      type: object
+      required:
+      - position
+      - team
+      - points
+      - played
+      - won
+      - lost
+      - setsWon
+      - setsLost
+      - penaltyPoints
+      properties:
+        position:
+          type: integer
+          minimum: 1
+        team:
+          $ref: '#/components/schemas/TeamSummary'
+        points:
+          type: integer
+        played:
+          type: integer
+        won:
+          type: integer
+        lost:
+          type: integer
+        setsWon:
+          type: integer
+        setsLost:
+          type: integer
+        penaltyPoints:
+          type: integer
+    MatchdayRequest:
+      type: object
+      required:
+      - competitionId
+      - number
+      properties:
+        competitionId:
+          type: integer
+          format: int64
+        number:
+          type: integer
+          minimum: 1
+        scheduledDate:
+          type:
+          - string
+          - 'null'
+          format: date
+    MatchdayResponse:
+      allOf:
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+          matches:
+            type: array
+            items:
+              $ref: '#/components/schemas/MatchResponse'
+      - $ref: '#/components/schemas/MatchdayRequest'
+    MatchStatus:
+      type: string
+      enum:
+      - SCHEDULED
+      - IN_PROGRESS
+      - FINISHED
+      - POSTPONED
+      - CANCELLED
+      - FORFEITED
+      description: '`FORFEITED` se usa desde la fase 3'
+    MatchRequest:
+      type: object
+      required:
+      - matchdayId
+      - homeTeamId
+      - awayTeamId
+      - startsAt
+      properties:
+        matchdayId:
+          type: integer
+          format: int64
+        homeTeamId:
+          type: integer
+          format: int64
+        awayTeamId:
+          type: integer
+          format: int64
+          description: Distinto del local
+        venueId:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        startsAt:
+          type: string
+          format: date-time
+          example: '2026-11-14T17:30:00Z'
+    MatchPatchRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/MatchStatus'
+        homeSets:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 3
+        awaySets:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 3
+        startsAt:
+          type: string
+          format: date-time
+    MatchResponse:
+      type: object
+      required:
+      - id
+      - matchdayId
+      - competitionId
+      - homeTeam
+      - awayTeam
+      - startsAt
+      - status
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        matchdayId:
+          type: integer
+          format: int64
+        matchdayNumber:
+          type: integer
+        competitionId:
+          type: integer
+          format: int64
+        homeTeam:
+          $ref: '#/components/schemas/TeamSummary'
+        awayTeam:
+          $ref: '#/components/schemas/TeamSummary'
+        venue:
+          oneOf:
+          - $ref: '#/components/schemas/VenueResponse'
+          - type: 'null'
+        startsAt:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/MatchStatus'
+        homeSets:
+          type:
+          - integer
+          - 'null'
+        awaySets:
+          type:
+          - integer
+          - 'null'
+    MatchPage:
+      allOf:
+      - $ref: '#/components/schemas/PageMeta'
+      - type: object
+        required:
+        - content
+        properties:
+          content:
+            type: array
+            items:
+              $ref: '#/components/schemas/MatchResponse'
