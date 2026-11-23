@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" role="img" aria-labelledby="t">
+  <title id="t">Ilustración para eventos del club: calendario y balón</title>
+  <rect width="1200" height="675" fill="#12394A"/>
+  <path d="M0 520 C150 490 270 550 420 520 S720 490 870 520 S1110 550 1200 520 V675 H0 Z" fill="#0A2531"/>
+  <path d="M0 575 C160 548 280 602 440 575 S760 548 920 575 S1140 602 1200 575" fill="none" stroke="#F5F1E8" stroke-opacity="0.35" stroke-width="5" stroke-linecap="round"/>
+  <rect x="380" y="130" width="440" height="330" rx="24" fill="#F5F1E8" stroke="#C9A66B" stroke-width="8"/>
+  <path d="M404 130 H796 A24 24 0 0 1 820 154 V220 H380 V154 A24 24 0 0 1 404 130 Z" fill="#C9A66B"/>
+  <rect x="460" y="100" width="22" height="70" rx="11" fill="#0F2A36"/>
+  <rect x="718" y="100" width="22" height="70" rx="11" fill="#0F2A36"/>
+  <rect x="420" y="250" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="500" y="250" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="580" y="250" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="660" y="250" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="740" y="250" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="420" y="315" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="500" y="315" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="580" y="315" width="50" height="40" rx="6" fill="#12394A" opacity="1"/>
+  <rect x="660" y="315" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="740" y="315" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="420" y="380" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="500" y="380" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="580" y="380" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="660" y="380" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <rect x="740" y="380" width="50" height="40" rx="6" fill="#12394A" opacity="0.25"/>
+  <g transform="translate(860 430) scale(0.45)"><circle r="100" fill="#F5F1E8" stroke="#C9A66B" stroke-width="8"/><g fill="none" stroke="#12394A" stroke-width="9" stroke-linecap="round"><g id="p"><path d="M0 0 C0 -43 -33 -73 -80 -60"/><path d="M30 -17 C37 -57 3 -87 -47 -93"/></g><use href="#p" transform="rotate(120)"/><use href="#p" transform="rotate(240)"/></g></g>
+</svg>

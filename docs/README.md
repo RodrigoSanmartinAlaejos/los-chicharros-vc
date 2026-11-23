@@ -1,6 +1,6 @@
 # Documentación del proyecto
 
-Última revisión: 2026-11-22.
+Última revisión: 2026-11-23.
 
 Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR como el código.
 
@@ -22,6 +22,8 @@ Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR c
 | [Arquitectura](03-arquitectura/arquitectura.md) | Diagramas C4 de contexto y contenedores, capas del backend y estructura del frontend |
 | [Modelo entidad-relación](04-datos/modelo-er.md) | Diagrama de todas las tablas del proyecto, por fases |
 | [Diccionario de datos de la fase 1](04-datos/diccionario-fase-1.md) | Cada tabla y columna de la fase 1, con tipos, reglas y orden de las migraciones |
+| [Datos de ejemplo](04-datos/datos-ejemplo.md) | Temporada 2026-27 ficticia en CSV (equipos, personas, partidos, clasificación y noticias), su generador y sus reglas |
+| [Imágenes de ejemplo](assets/imagenes/README.md) | Ilustraciones propias para portada, equipos, personas y noticias, con su licencia |
 | [API REST](05-api/README.md) | Convenciones, errores y contrato OpenAPI de la fase 1 |
 | [Reglas técnicas](07-desarrollo/reglas-tecnicas.md) | Cómo se escribe el código, entornos, ramas y bases de datos |
 | [Decisiones de arquitectura (ADR)](adr/README.md) | Por qué se tomó cada decisión técnica importante |

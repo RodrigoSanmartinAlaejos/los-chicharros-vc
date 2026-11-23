@@ -1,0 +1,11 @@
+code,name,gender,sort_order
+ALEVIN_M,Alevín,MALE,1
+ALEVIN_F,Alevín,FEMALE,2
+INFANTIL_M,Infantil,MALE,3
+INFANTIL_F,Infantil,FEMALE,4
+CADETE_M,Cadete,MALE,5
+CADETE_F,Cadete,FEMALE,6
+JUVENIL_M,Juvenil,MALE,7
+JUVENIL_F,Juvenil,FEMALE,8
+SENIOR_M,Sénior,MALE,9
+SENIOR_F,Sénior,FEMALE,10
