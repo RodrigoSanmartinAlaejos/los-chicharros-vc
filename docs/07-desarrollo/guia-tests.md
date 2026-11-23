@@ -87,7 +87,7 @@ class StandingServiceTest {
 
 - Todos heredan de una clase base común. Así Spring reutiliza un único contexto y un único contenedor MySQL para toda la suite, y los tests son mucho más rápidos. Por la misma razón, no se añade `@MockitoBean` en un test suelto: cambia la configuración y obliga a crear otro contexto.
 - MySQL real con Testcontainers, nunca H2 (regla 16 de Java en las reglas técnicas). Docker tiene que estar arrancado.
-- Cada test empieza con la base limpia: `DatabaseCleaner` vacía las tablas de negocio antes de cada test y deja las de catálogo que carga una migración.
+- Cada test empieza con la base limpia: `DatabaseCleaner` vacía las tablas de negocio antes de cada test. En las de catálogo que carga una migración (`roles`, `categories`) solo borra las filas que añadieron los tests, así que un test no edita ni borra filas del catálogo: crea las suyas.
 - No se usa `@Transactional` en los tests de endpoints. Si el test abre la transacción, el controlador serializa dentro de ella y se ocultan los `LazyInitializationException` que sí saldrían en producción (`open-in-view` está desactivado).
 - Para tests de repositorio con consultas propias sí se puede usar `@Transactional` (se deshace al terminar).
 - Para autenticarse, el test pide el token al servicio que emite los JWT, no al endpoint de login. El login tiene límite de 20 peticiones por minuto y rompería la suite. Solo los tests del propio login llaman a `/api/v1/auth/login`.
@@ -117,7 +117,11 @@ public class DatabaseCleaner {
   /** Tablas que rellena una migración y que los tests no deben vaciar. */
   private static final Set<String> KEEP = Set.of("flyway_schema_history", "roles", "categories");
 
+  /** Tablas de catálogo con id: el último id que cargaron las migraciones. */
+  private static final Set<String> CATALOGS = Set.of("roles", "categories");
+
   private final JdbcTemplate jdbc;
+  private Map<String, Long> baseline;
 
   public DatabaseCleaner(JdbcTemplate jdbc) {
     this.jdbc = jdbc;
@@ -126,9 +130,13 @@ public class DatabaseCleaner {
   public void clean() {
     var tables =
         jdbc.queryForList(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()",
+            "SELECT table_name FROM information_schema.tables"
+                + " WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'",
             String.class);
-    // Las tres sentencias van por la misma conexión: FOREIGN_KEY_CHECKS es de sesión.
+    if (baseline == null) {
+      baseline = readBaseline(tables);
+    }
+    // Todas las sentencias van por la misma conexión: FOREIGN_KEY_CHECKS es de sesión.
     jdbc.execute(
         (ConnectionCallback<Void>)
             connection -> {
@@ -137,12 +145,26 @@ public class DatabaseCleaner {
                 for (var table : tables) {
                   if (!KEEP.contains(table)) {
                     statement.execute("TRUNCATE TABLE `" + table + "`");
+                  } else if (baseline.containsKey(table)) {
+                    statement.execute(
+                        "DELETE FROM `" + table + "` WHERE id > " + baseline.get(table));
                   }
                 }
                 statement.execute("SET FOREIGN_KEY_CHECKS = 1");
               }
               return null;
             });
+  }
+
+  private Map<String, Long> readBaseline(Iterable<String> tables) {
+    var ids = new HashMap<String, Long>();
+    for (var table : tables) {
+      if (CATALOGS.contains(table)) {
+        var max = jdbc.queryForObject("SELECT MAX(id) FROM `" + table + "`", Long.class);
+        ids.put(table, max == null ? 0L : max);
+      }
+    }
+    return ids;
   }
 }
 ```
@@ -152,11 +174,12 @@ public class DatabaseCleaner {
 | Clase | Para qué |
 | --- | --- |
 | `AbstractIntegrationTest` | Clase base: contexto y MySQL compartidos; antes de cada test limpia la base, el usuario actual y los emails |
-| `DatabaseCleaner` | Vacía las tablas de negocio |
+| `DatabaseCleaner` | Vacía las tablas de negocio y quita del catálogo las filas que añadieron los tests |
 | `TestCurrentUser` | Usuario de la auditoría que fija el propio test (`currentUser.set(7)`), mientras no haya login |
 | `TempDirImageStorage` | `ImageStorage` que escribe en una carpeta temporal |
 | `RecordingEmailSender` | `EmailSender` que guarda los emails en memoria (`emailSender.sent()`) |
 | `probe/` | Entidad `AuditProbe` y endpoints `/test/probes` que solo existen en los tests, para probar los errores y la auditoría sin depender de un recurso real. Su tabla la crea `src/test/resources/db/testmigration/`, que solo carga el perfil `test` |
+| `dependency_probes` (tabla) | Filas que apuntan a una temporada, una categoría o una instalación, como harán equipos y partidos. Sirve para probar el 409 al borrar algo en uso antes de que existan esas tablas; también la crea `db/testmigration/` |
 
 Un test de endpoint queda así:
 

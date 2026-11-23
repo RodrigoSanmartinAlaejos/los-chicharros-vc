@@ -1,0 +1,59 @@
+<div class="admin">
+  <header class="admin__topbar">
+    <button
+      type="button"
+      class="admin__toggle"
+      aria-controls="admin-nav"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="toggleMenu()"
+    >
+      <span class="visually-hidden">{{ menuOpen() ? 'Cerrar menú' : 'Abrir menú' }}</span>
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+        @if (menuOpen()) {
+          <path d="M6 6l12 12M18 6L6 18" />
+        } @else {
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        }
+      </svg>
+    </button>
+    <span class="admin__topbar-title">Gestión</span>
+    <img class="admin__crest" src="escudo.svg" alt="" width="32" height="38" />
+  </header>
+
+  <nav
+    id="admin-nav"
+    class="admin__sidebar"
+    [class.admin__sidebar--open]="menuOpen()"
+    aria-label="Menú de gestión"
+  >
+    <a class="admin__brand" routerLink="/gestion" (click)="closeMenu()">
+      <img class="admin__crest" src="escudo.svg" alt="" width="32" height="38" />
+      <span>Gestión</span>
+    </a>
+    <ul class="admin__list">
+      @for (item of navItems; track item.path) {
+        <li>
+          <a
+            class="admin__link"
+            [routerLink]="item.path"
+            routerLinkActive="admin__link--active"
+            ariaCurrentWhenActive="page"
+            (click)="closeMenu()"
+            >{{ item.label }}</a
+          >
+        </li>
+      }
+    </ul>
+    <div class="admin__footer">
+      <a class="admin__public-link" routerLink="/">Ver la web</a>
+    </div>
+  </nav>
+
+  @if (menuOpen()) {
+    <div class="admin__backdrop" aria-hidden="true" (click)="closeMenu()"></div>
+  }
+
+  <main id="contenido" class="admin__content" tabindex="-1">
+    <router-outlet />
+  </main>
+</div>

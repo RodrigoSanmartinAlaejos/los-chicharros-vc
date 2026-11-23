@@ -1,0 +1,152 @@
+<section aria-labelledby="venues-title">
+  <div class="panel__header">
+    <h2 id="venues-title">Instalaciones</h2>
+    @if (!formOpen()) {
+      <button type="button" class="button button--primary" (click)="startCreate()">
+        + Nueva instalación
+      </button>
+    }
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando instalaciones…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las instalaciones.
+          <button type="button" class="link-button" (click)="load()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (items().length === 0) {
+          <p class="state">Todavía no hay instalaciones.</p>
+        } @else {
+          <table class="panel__table">
+            <thead>
+              <tr>
+                <th scope="col">Instalación</th>
+                <th scope="col">Dirección</th>
+                <th scope="col">Mapa</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (venue of items(); track venue.id) {
+                <tr>
+                  <td data-label="Instalación">
+                    <strong>{{ venue.name }}</strong>
+                  </td>
+                  <td data-label="Dirección">{{ venue.address }}</td>
+                  <td data-label="Mapa">
+                    {{ venue.latitude !== null && venue.longitude !== null ? 'Sí' : 'No' }}
+                  </td>
+                  <td>
+                    @if (confirmingId() === venue.id) {
+                      <div class="confirm" role="group" [attr.aria-label]="'Borrar ' + venue.name">
+                        <span>¿Borrar {{ venue.name }}?</span>
+                        <button
+                          type="button"
+                          class="button button--danger"
+                          (click)="confirmDelete(venue)"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button type="button" class="button" (click)="confirmingId.set(null)">
+                          Cancelar
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="panel__actions">
+                        <button type="button" class="link-button" (click)="startEdit(venue)">
+                          Editar<span class="visually-hidden"> {{ venue.name }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="link-button link-button--danger"
+                          (click)="askDelete(venue)"
+                        >
+                          Borrar<span class="visually-hidden"> {{ venue.name }}</span>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    }
+  </div>
+
+  @if (formOpen()) {
+    <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h3>{{ editingId() === null ? 'Nueva instalación' : 'Editar instalación' }}</h3>
+      @if (formError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field field--wide">
+        <label for="venue-name">Nombre</label>
+        <input
+          id="venue-name"
+          formControlName="name"
+          maxlength="100"
+          aria-describedby="venue-name-error"
+          [attr.aria-invalid]="errorOf('name') ? 'true' : null"
+        />
+        <p id="venue-name-error" class="field__error">{{ errorOf('name') }}</p>
+      </div>
+      <div class="field field--wide">
+        <label for="venue-address">Dirección</label>
+        <input
+          id="venue-address"
+          formControlName="address"
+          maxlength="200"
+          autocomplete="street-address"
+          aria-describedby="venue-address-error"
+          [attr.aria-invalid]="errorOf('address') ? 'true' : null"
+        />
+        <p id="venue-address-error" class="field__error">{{ errorOf('address') }}</p>
+      </div>
+      <div class="field">
+        <label for="venue-latitude">Latitud (opcional)</label>
+        <input
+          id="venue-latitude"
+          type="number"
+          step="0.000001"
+          formControlName="latitude"
+          placeholder="28.468200"
+          aria-describedby="venue-latitude-error"
+          [attr.aria-invalid]="errorOf('latitude') ? 'true' : null"
+        />
+        <p id="venue-latitude-error" class="field__error">{{ errorOf('latitude') }}</p>
+      </div>
+      <div class="field">
+        <label for="venue-longitude">Longitud (opcional)</label>
+        <input
+          id="venue-longitude"
+          type="number"
+          step="0.000001"
+          formControlName="longitude"
+          placeholder="-16.246600"
+          aria-describedby="venue-longitude-error"
+          [attr.aria-invalid]="errorOf('longitude') ? 'true' : null"
+        />
+        <p id="venue-longitude-error" class="field__error">{{ errorOf('longitude') }}</p>
+      </div>
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" class="button" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  }
+</section>

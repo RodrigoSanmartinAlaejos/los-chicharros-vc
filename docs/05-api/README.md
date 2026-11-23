@@ -11,7 +11,7 @@ Resumen de las [reglas técnicas](../07-desarrollo/reglas-tecnicas.md), que son 
 - Todas las rutas cuelgan de `/api/v1`, en inglés, en plural y en `kebab-case`. El navegador siempre llama a través del proxy del SSR ([ADR-004](../adr/004-ssr-api-proxy.md)).
 - JSON en `camelCase`; fechas con hora en ISO 8601 y UTC (`2026-11-14T17:30:00Z`); fechas sin hora como `2026-11-14`.
 - Paginación con `?page=0&size=20&sort=publishedAt,desc`; tamaño máximo 100. La respuesta trae `content`, `page`, `size`, `totalElements` y `totalPages`.
-- Lectura pública y gestión comparten ruta; quién puede escribir lo decide la [matriz de permisos](../02-requisitos/matriz-permisos.md). En la fase 1 solo escribe el administrador.
+- Lectura pública y gestión comparten ruta; quién puede escribir lo decide la [matriz de permisos](../02-requisitos/matriz-permisos.md). En la fase 1 solo escribe el administrador. Hasta que llegue el login (sprint 2) los endpoints de escritura que ya existen (temporadas, categorías e instalaciones, #59) no tienen protección; Spring Security la añade en H09-H11.
 - Las respuestas públicas muestran las personas como `displayName` («Lucía M.») y la foto solo con consentimiento de imagen.
 
 ## Métodos y códigos

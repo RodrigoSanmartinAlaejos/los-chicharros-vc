@@ -84,6 +84,13 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     return withInstance(validationProblem(violations), request);
   }
 
+  /** Reglas entre campos que comprueba el servicio. */
+  @ExceptionHandler(InvalidFieldException.class)
+  ProblemDetail handleInvalidField(InvalidFieldException ex, HttpServletRequest request) {
+    return withInstance(
+        validationProblem(List.of(new FieldViolation(ex.getField(), ex.getMessage()))), request);
+  }
+
   @ExceptionHandler(ResourceNotFoundException.class)
   ProblemDetail handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
     return withInstance(

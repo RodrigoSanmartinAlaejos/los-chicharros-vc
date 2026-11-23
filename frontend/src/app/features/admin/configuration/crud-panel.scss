@@ -1,0 +1,190 @@
+// Estilos comunes de los paneles de configuración (wireframe 08: tarjeta con tabla y formulario).
+@use '../../../../styles/tokens' as *;
+
+:host {
+  display: block;
+  margin-bottom: var(--space-7);
+}
+
+.panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.panel__card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.panel__table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+// En móvil la tabla pasa a filas apiladas con la etiqueta delante de cada dato
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .panel__table {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    tr {
+      display: block;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tr:last-child {
+      border-bottom: 0;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-1) 0;
+      border: 0;
+    }
+
+    td[data-label]::before {
+      content: attr(data-label);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-small);
+    }
+  }
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.state {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+
+  h3 {
+    margin: 0;
+  }
+
+  @include from($breakpoint-md) {
+    grid-template-columns: repeat(2, 1fr);
+
+    h3,
+    .field--wide,
+    .alert,
+    .form__buttons {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+
+  label {
+    font-size: var(--font-size-label);
+    font-weight: 600;
+  }
+
+  input,
+  select {
+    min-height: 2.75rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  input[aria-invalid='true'],
+  select[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+}
+
+.field--check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  input {
+    width: 1.25rem;
+    height: 1.25rem;
+    min-height: 0;
+  }
+}
+
+.field__hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+}
+
+.field__error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-small);
+}
+
+.form__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
