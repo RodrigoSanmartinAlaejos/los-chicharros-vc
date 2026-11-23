@@ -17,6 +17,7 @@ Toda la documentación del club vive aquí, en Markdown, y se cambia con un PR c
 | [Casos de uso por rol](06-diagramas/casos-de-uso.md) | Diagramas de lo que puede hacer cada rol, con la fase en la que llega cada caso |
 | [Diagramas de flujos y estados](06-diagramas/README.md) | Secuencias de login, sesión, publicar noticia e introducir resultado; estados de partido y noticia |
 | [Paleta de colores](02-requisitos/paleta-colores.md) | Colores Atlántico y arena, variables CSS y reglas de contraste |
+| [Wireframes y guía visual](02-requisitos/wireframes.md) | Bocetos de las pantallas de la fase 1, navegación y tipografía |
 | [Arquitectura](03-arquitectura/arquitectura.md) | Diagramas C4 de contexto y contenedores, capas del backend y estructura del frontend |
 | [Modelo entidad-relación](04-datos/modelo-er.md) | Diagrama de todas las tablas del proyecto, por fases |
 | [Diccionario de datos de la fase 1](04-datos/diccionario-fase-1.md) | Cada tabla y columna de la fase 1, con tipos, reglas y orden de las migraciones |
