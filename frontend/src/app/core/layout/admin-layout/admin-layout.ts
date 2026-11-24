@@ -21,9 +21,9 @@ export class AdminLayout {
   protected readonly menuOpen = signal(false);
   protected readonly email = this.auth.email;
 
+  /** Cierra la sesión también en la API y vuelve a la portada (secuencia de sesión, H10). */
   protected logout(): void {
-    this.auth.logout();
-    void this.router.navigateByUrl('/login');
+    this.auth.logout().subscribe(() => void this.router.navigateByUrl('/'));
   }
 
   protected toggleMenu(): void {

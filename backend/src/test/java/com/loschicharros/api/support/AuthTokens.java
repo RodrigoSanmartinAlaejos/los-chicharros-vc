@@ -52,6 +52,7 @@ public class AuthTokens {
 
   /** Cabecera {@code Authorization} con un token para ese usuario y esos roles. */
   public String bearer(long userId, List<String> roles) {
-    return "Bearer " + tokens.issueAccessToken(userId, roles);
+    var email = jdbc.queryForObject("SELECT email FROM users WHERE id = ?", String.class, userId);
+    return "Bearer " + tokens.issueAccessToken(userId, email, roles);
   }
 }
