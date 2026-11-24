@@ -33,10 +33,11 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
  * Seguridad de la API: sin sesión de servidor, access token JWT en la cabecera {@code
  * Authorization} y autorización por rol (matriz de permisos).
  *
- * <p>Bajo {@code /api/v1} todo exige sesión salvo el login y las lecturas públicas; cada acción se
- * vuelve a comprobar con {@code @PreAuthorize}. Fuera de {@code /api/v1} solo queda Actuator, que
- * ya limita lo que expone. Los errores 401 y 403 los escribe {@code ApiExceptionHandler}, con el
- * mismo formato RFC 7807 que el resto.
+ * <p>Bajo {@code /api/v1} todo exige sesión salvo las rutas de autenticación (que usan la cookie de
+ * refresco, no el access token) y las lecturas públicas; cada acción se vuelve a comprobar con
+ * {@code @PreAuthorize}. Fuera de {@code /api/v1} solo queda Actuator, que ya limita lo que expone.
+ * Los errores 401 y 403 los escribe {@code ApiExceptionHandler}, con el mismo formato RFC 7807 que
+ * el resto.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
@@ -57,8 +58,9 @@ class SecurityConfig {
       @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver)
       throws Exception {
     return http
-        // Sin cookies de sesión ni formularios: el token viaja en una cabecera que el navegador no
-        // envía solo, así que no hay CSRF que proteger (la cookie de refresco llega con #54)
+        // Sin CSRF: el access token viaja en una cabecera que el navegador no envía solo, y la
+        // cookie
+        // de refresco es SameSite=Strict y solo va a /api/v1/auth, así que otra web no puede usarla
         .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.disable())
         .httpBasic(basic -> basic.disable())
@@ -67,7 +69,11 @@ class SecurityConfig {
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth ->
-            auth.requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
+            auth.requestMatchers(
+                    HttpMethod.POST,
+                    "/api/v1/auth/login",
+                    "/api/v1/auth/refresh",
+                    "/api/v1/auth/logout")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, PUBLIC_GETS)
                 .permitAll()

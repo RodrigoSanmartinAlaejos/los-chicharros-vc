@@ -260,14 +260,14 @@ Solo la configuración exclusiva del administrador (usuarios, roles e historial)
 
 **Autenticación**
 
-1. Contraseñas con BCrypt. El access token JWT dura 15 minutos.
+1. Contraseñas con BCrypt. El access token JWT dura 15 minutos y lleva el id del usuario (`sub`), su email (para mostrar quién tiene la sesión tras recargar) y sus roles; nada más.
 2. El refresh token viaja en una cookie `HttpOnly`, `Secure`, `SameSite=Strict` y con `Path=/api/v1/auth`, sin atributo Domain, para que solo valga en el dominio del frontend. Nunca va en el cuerpo de la respuesta ni es accesible desde JavaScript.
 3. Los refresh tokens se guardan con hash (SHA-256) en `refresh_tokens` y rotan en cada uso. Si llega uno ya usado, se revocan todos los del usuario. La sesión es deslizante: cada refresco alarga la caducidad 2 horas, y la sesión termina tras 2 horas sin refrescos o, como máximo, 7 días después del login.
 4. Los tokens de invitación y de recuperación se guardan con hash en `account_tokens`, son de un solo uso y caducan (invitación: 7 días; recuperación: 1 hora).
 5. Tras 5 intentos de login fallidos seguidos para un mismo email desde la misma IP, esa combinación se bloquea 15 minutos; desde otra IP se puede seguir entrando. Además, `/api/v1/auth/**` admite como mucho 20 peticiones por minuto por IP (Bucket4j). Los contadores viven en memoria (Caffeine), no en la base de datos. Desde la fase 2, el usuario recibe un email avisando de los intentos fallidos.
 6. Las respuestas de login y de recuperación no revelan si un email existe ni si está bloqueado: un login fallido devuelve siempre 401 con el mismo mensaje.
 7. CORS desactivado: el navegador solo habla con el frontend, que reenvía /api a la API (ver SSR, regla 6), así que la API no admite ningún origen externo. La API solo se fía de X-Forwarded-For cuando viene del proxy (server.forward-headers-strategy), para que el bloqueo de login y los logs usen la IP real. Nunca `*`.
-8. Login, refresco y cierre de sesión existen desde la fase 1. Mientras hay actividad, el frontend pide un access token nuevo antes de que caduque el actual. El editor de noticias guarda un borrador en el navegador (sin datos de sesión) para no perder trabajo si la sesión termina.
+8. Login, refresco y cierre de sesión existen desde la fase 1. Mientras hay actividad (teclado o clic desde el último token), el frontend pide un access token nuevo un minuto antes de que caduque el actual; sin actividad lo deja caducar, y la siguiente petición lo renueva con la cookie si aún no han pasado 2 horas. Las renovaciones de una pestaña van de una en una. El editor de noticias guarda un borrador en el navegador (sin datos de sesión) para no perder trabajo si la sesión termina.
 
 ## SQL y MySQL
 

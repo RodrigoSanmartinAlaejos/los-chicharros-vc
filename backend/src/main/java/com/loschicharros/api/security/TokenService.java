@@ -22,13 +22,15 @@ public class TokenService {
   }
 
   /**
-   * Crea un access token para un usuario. No lleva datos personales: solo el id y los roles.
+   * Crea un access token para un usuario: el id, el email (para que el panel muestre quién tiene la
+   * sesión tras recargar) y los roles. El token solo vive en la memoria del navegador.
    *
    * @param userId id del usuario, que va en la claim {@code sub}
+   * @param email email del usuario, en la claim {@code email}
    * @param roles roles sin el prefijo {@code ROLE_}, por ejemplo {@code ADMIN}
    * @return el token firmado
    */
-  public String issueAccessToken(long userId, List<String> roles) {
+  public String issueAccessToken(long userId, String email, List<String> roles) {
     var now = Instant.now();
     var claims =
         JwtClaimsSet.builder()
@@ -36,6 +38,7 @@ public class TokenService {
             .subject(Long.toString(userId))
             .issuedAt(now)
             .expiresAt(now.plus(properties.accessTokenTtl()))
+            .claim("email", email)
             .claim(SecurityConfig.ROLES_CLAIM, roles)
             .build();
     var header = JwsHeader.with(MacAlgorithm.HS256).build();

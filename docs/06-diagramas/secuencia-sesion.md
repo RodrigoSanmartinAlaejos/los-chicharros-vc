@@ -11,7 +11,7 @@ sequenceDiagram
     participant N as Navegador (Angular)
     participant API as API (a través del proxy)
     participant DB as Base de datos
-    Note over N: Al cargar la app, o un minuto antes de que caduque el access token
+    Note over N: Al entrar en el panel sin access token, un minuto antes de que caduque (si ha habido actividad) o tras un 401
     N->>API: POST /api/v1/auth/refresh (cookie refresh_token)
     API->>DB: Busca el token por su hash SHA-256
     alt No existe, caducado o sesión de más de 7 días
@@ -34,4 +34,6 @@ sequenceDiagram
 ```
 
 - La sesión es deslizante: cada renovación alarga 2 horas, pero nunca más allá de 7 días desde el login.
+- Sin actividad, el frontend no renueva: el access token caduca y, si pasan 2 horas, también el refresh token, así que hay que volver a entrar. Si la API responde 401 a una petición, el frontend renueva una vez y la repite.
+- Cualquier 401 de `/refresh` borra la cookie (`Max-Age=0`).
 - Si dos pestañas renuevan a la vez, la segunda usa un token ya rotado y cierra la sesión; el frontend centraliza la renovación en un único servicio para evitarlo.

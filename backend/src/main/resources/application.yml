@@ -37,6 +37,11 @@ app:
     secret: ${JWT_SECRET:}
     access-token-ttl: 15m
     issuer: los-chicharros-api
+  # Sesión: cada renovación la alarga 2 horas, hasta 7 días desde el login
+  session:
+    refresh-token-ttl: 2h
+    max-duration: 7d
+    cookie-secure: true
   # Administrador inicial: se crea al arrancar si no hay ninguno
   admin:
     email: ${ADMIN_EMAIL:}

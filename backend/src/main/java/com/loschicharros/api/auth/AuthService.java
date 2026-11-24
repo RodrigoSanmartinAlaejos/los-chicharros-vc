@@ -13,9 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Inicio de sesión con email y contraseña. */
+/** Inicio, renovación y cierre de la sesión. */
 @Service
-@Transactional(readOnly = true)
 public class AuthService {
 
   private static final Logger log = LoggerFactory.getLogger(AuthService.class);
@@ -23,6 +22,7 @@ public class AuthService {
   private final UserRepository users;
   private final PasswordEncoder passwordEncoder;
   private final TokenService tokens;
+  private final RefreshTokenService refreshTokens;
 
   /**
    * Hash con el que se compara cuando el email no existe, para que la respuesta tarde lo mismo y no
@@ -30,20 +30,26 @@ public class AuthService {
    */
   private final String dummyHash;
 
-  public AuthService(UserRepository users, PasswordEncoder passwordEncoder, TokenService tokens) {
+  public AuthService(
+      UserRepository users,
+      PasswordEncoder passwordEncoder,
+      TokenService tokens,
+      RefreshTokenService refreshTokens) {
     this.users = users;
     this.passwordEncoder = passwordEncoder;
     this.tokens = tokens;
+    this.refreshTokens = refreshTokens;
     this.dummyHash = passwordEncoder.encode("contraseña-que-nunca-coincide");
   }
 
   /**
-   * Comprueba las credenciales y emite un access token.
+   * Comprueba las credenciales y abre una sesión: access token y refresh token.
    *
    * @throws InvalidCredentialsException si el email no existe, la contraseña no coincide o la
    *     cuenta no puede entrar; siempre la misma
    */
-  public AccessTokenResponse login(LoginRequest request) {
+  @Transactional
+  public IssuedSession login(LoginRequest request) {
     var user = users.findByEmail(User.normalizeEmail(request.email()));
     var hash = user.map(User::getPasswordHash).orElse(dummyHash);
     var matches = passwordEncoder.matches(request.password(), hash);
@@ -51,9 +57,38 @@ public class AuthService {
       log.info("Login fallido");
       throw new InvalidCredentialsException();
     }
-    var id = user.get().getId();
-    log.info("Login correcto del usuario {}", id);
-    return new AccessTokenResponse(
-        tokens.issueAccessToken(id, List.of(Roles.ADMIN)), tokens.accessTokenSeconds());
+    log.info("Login correcto del usuario {}", user.get().getId());
+    var refresh = refreshTokens.startSession(user.get().getId());
+    return new IssuedSession(accessTokenFor(user.get()), refresh.value(), refresh.expiresAt());
+  }
+
+  /**
+   * Renueva la sesión: rota el refresh token y emite un access token nuevo.
+   *
+   * @throws InvalidSessionException si el refresh token no vale o la cuenta ya no puede entrar
+   */
+  @Transactional(noRollbackFor = InvalidSessionException.class)
+  public IssuedSession refresh(String rawRefreshToken) {
+    var rotation = refreshTokens.rotate(rawRefreshToken);
+    var user = users.findById(rotation.userId()).filter(User::canLogIn);
+    if (user.isEmpty()) {
+      refreshTokens.endAllSessions(rotation.userId());
+      throw new InvalidSessionException();
+    }
+    var refresh = rotation.token();
+    return new IssuedSession(accessTokenFor(user.get()), refresh.value(), refresh.expiresAt());
+  }
+
+  /**
+   * Cierra la sesión del refresh token, si lo hay. El access token caduca solo en 15 minutos como
+   * mucho; el frontend lo borra de memoria.
+   */
+  public void logout(String rawRefreshToken) {
+    refreshTokens.endSession(rawRefreshToken);
+  }
+
+  private AccessTokenResponse accessTokenFor(User user) {
+    var token = tokens.issueAccessToken(user.getId(), user.getEmail(), List.of(Roles.ADMIN));
+    return new AccessTokenResponse(token, tokens.accessTokenSeconds());
   }
 }
