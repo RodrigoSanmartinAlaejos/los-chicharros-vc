@@ -1,6 +1,6 @@
 # Plan de sprints de la fase 1
 
-Última revisión: 2026-11-23.
+Última revisión: 2026-11-24.
 
 Cómo se reparte el trabajo de la fase 1 (MVP público) en sprints de dos semanas, sin fechas. Es el entregable del paso 12 de la planificación y cierra la fase 0. Las historias están en [historias de la fase 1](../02-requisitos/historias-fase-1.md); las tareas técnicas, que no son historias, se crean como issues con la plantilla de tarea técnica.
 
@@ -8,7 +8,7 @@ Cómo se reparte el trabajo de la fase 1 (MVP público) en sprints de dos semana
 
 - Dedicación: de 5 a 10 horas por semana, es decir, de 10 a 20 horas por sprint.
 - Estimación inicial: **1 punto ≈ 1,5 horas**, así que caben **de 7 a 13 puntos por sprint**; el plan apunta a la parte alta y se recorta si no da tiempo.
-- La estimación se recalibra con la velocidad real (puntos terminados) en la retrospectiva. Al cerrar el sprint 1 se mantuvo en 1,5 horas: los sprints 0 y 1 (21 puntos) se hicieron en dos días con mucha ayuda y no son representativos; se recalibra al cerrar el sprint 2.
+- **Desde el cierre del sprint 2 se planifica por velocidad**: cada sprint lleva como mucho los puntos terminados en el anterior (ahora 13: los sprints 0, 1 y 2 terminaron completos con 8, 13 y 13 puntos). La equivalencia de 1,5 horas por punto queda solo como referencia para el trabajo sin ayuda: el sprint 2 se hizo en unas 1,5 horas de reloj, así que convertir puntos en horas no sirve para planificar. Si un sprint no termina sus puntos, el siguiente lleva menos.
 - Total de la fase: 21 historias y 15 tareas técnicas, **124 puntos** en 11 sprints.
 
 ## Sprints
@@ -63,6 +63,20 @@ Terminado el 2026-11-23 con 13 de 13 puntos; objetivo cumplido.
   - Revisar la Definition of Ready al empezar el sprint y no al coger la historia: el #59 aún tenía sin marcar el diseño aunque ya estaba definido.
   - Los estilos que se repiten (botones, campos, avisos) van en `src/styles/_controls.scss` desde el principio: cada componente tiene un límite de 4 kB de estilos.
 
+### Sprint 2: login y sesión
+
+Terminado el 2026-11-24 con 13 de 13 puntos; objetivo cumplido.
+
+- **Demo:** `/gestion` sin sesión lleva a `/login` y, tras entrar, vuelve a la página pedida; con una contraseña mala sale «Email o contraseña incorrectos». Al recargar la página la sesión sigue abierta, porque el navegador guarda el refresh token en una cookie `HttpOnly` que JavaScript no puede leer. «Cerrar sesión» lleva a la portada, borra la cookie y `/gestion` vuelve a pedir el login. Si se reutiliza un refresh token ya usado, se cierran todas las sesiones del usuario (`SessionIT`).
+
+  <img src="../assets/demos/sprint-2-login-escritorio.png" width="640" alt="Demo del sprint 2: página de login del panel en escritorio">
+  <img src="../assets/demos/sprint-2-sesion-movil.png" width="200" alt="Demo del sprint 2: menú del panel en móvil con la sesión iniciada después de recargar">
+
+- **Qué mejorar:**
+  - Comprobar la configuración real además de los tests: el bloque `app:` no había entrado en `application.yml` y los tests pasaban porque `application-test.yml` lo define; solo la prueba de punta a punta lo detectó.
+  - Cada variable nueva se documenta en `.env.example` con sus mínimos y se valida al arrancar con un mensaje que diga si falta o si no cumple el mínimo: un `ADMIN_PASSWORD` de menos de 12 caracteres en el `.env` paró la API al probarla en local.
+  - No repetir un bloque de comandos ya ejecutado aunque no se haya pegado la salida: crea issues y ramas duplicados (pasó con el #114). Antes de repetirlo, comprobar con `git log --oneline -1` y `gh pr list`.
+
 ## Tareas técnicas
 
 | Id | Tarea | Puntos | Sprint |
@@ -85,7 +99,7 @@ Terminado el 2026-11-23 con 13 de 13 puntos; objetivo cumplido.
 
 ## Decisiones
 
-- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos; se revisa al cerrar el sprint 2.
+- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos. Al cerrar el sprint 2 (decidido el 2026-11-24) se deja de recalibrar en horas y **se planifica por velocidad** (puntos terminados por sprint, ahora 13); las horas por punto quedan solo como referencia.
 - **Sprint 0** para cerrar la fase 0 con las herramientas de calidad (Spotless, Checkstyle, Husky, JaCoCo) y los datos de ejemplo antes de escribir código de negocio.
 - **Sprint y puntos como campos del tablero**, no como etiquetas: un campo de selección «Sprint» y un campo numérico «Puntos».
 - **El despliegue va al final**, en los sprints 9 y 10; hasta entonces la demo de cada sprint se hace en local. El sprint 10 es corto a propósito, para dejar margen a los arreglos de la release.
