@@ -30,6 +30,8 @@
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <checkstyle.version>14.4.0</checkstyle.version>
     <jacoco-maven-plugin.version>0.8.16</jacoco-maven-plugin.version>
+    <!-- Documentación de la API en /swagger-ui (Spring Boot no la gestiona) -->
+    <springdoc.version>3.2.1</springdoc.version>
   </properties>
 
   <dependencies>
@@ -60,6 +62,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
     </dependency>
     <dependency>
       <groupId>com.mysql</groupId>

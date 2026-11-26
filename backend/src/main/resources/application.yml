@@ -47,6 +47,15 @@ app:
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
 
+# Documentación de la API (T08): /swagger-ui y /v3/api-docs, solo con las rutas de /api/v1. Las
+# respuestas de error salen de la convención de la API (OpenApiConfig), no de ApiExceptionHandler
+springdoc:
+  paths-to-match: /api/v1/**
+  override-with-generic-response: false
+  default-produces-media-type: application/json
+  swagger-ui:
+    path: /swagger-ui
+
 management:
   endpoints:
     access:

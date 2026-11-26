@@ -3,6 +3,8 @@ package com.loschicharros.api.venues;
 import com.loschicharros.api.security.Roles;
 import com.loschicharros.api.venues.dto.VenueRequest;
 import com.loschicharros.api.venues.dto.VenueResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  *
  * <p>Listar es público; crear, editar y borrar es solo del administrador (matriz de permisos).
  */
+@Tag(name = "Configuración")
 @RestController
 @RequestMapping("/api/v1/venues")
 class VenueController {
@@ -32,12 +35,14 @@ class VenueController {
     this.service = service;
   }
 
+  @Operation(summary = "Listar instalaciones")
   @GetMapping
   List<VenueResponse> findAll() {
     return service.findAll();
   }
 
   @PreAuthorize(Roles.ONLY_ADMIN)
+  @Operation(summary = "Crear una instalación")
   @PostMapping
   ResponseEntity<VenueResponse> create(@Valid @RequestBody VenueRequest request) {
     var created = service.create(request);
@@ -50,12 +55,14 @@ class VenueController {
   }
 
   @PreAuthorize(Roles.ONLY_ADMIN)
+  @Operation(summary = "Sustituir una instalación")
   @PutMapping("/{id}")
   VenueResponse update(@PathVariable Long id, @Valid @RequestBody VenueRequest request) {
     return service.update(id, request);
   }
 
   @PreAuthorize(Roles.ONLY_ADMIN)
+  @Operation(summary = "Borrar una instalación")
   @DeleteMapping("/{id}")
   ResponseEntity<Void> delete(@PathVariable Long id) {
     service.delete(id);

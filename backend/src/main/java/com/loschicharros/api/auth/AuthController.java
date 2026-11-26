@@ -2,6 +2,11 @@ package com.loschicharros.api.auth;
 
 import com.loschicharros.api.auth.dto.AccessTokenResponse;
 import com.loschicharros.api.auth.dto.LoginRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * refresh token, solo en una cookie {@code HttpOnly}, {@code Secure}, {@code SameSite=Strict} y
  * limitada a {@code /api/v1/auth} (reglas técnicas, regla 2 de autenticación).
  */
+@Tag(name = "Autenticación")
 @RestController
 @RequestMapping(AuthController.PATH)
 @EnableConfigurationProperties(SessionProperties.class)
@@ -33,6 +39,10 @@ class AuthController {
 
   static final String PATH = "/api/v1/auth";
   static final String COOKIE = "refresh_token";
+
+  private static final String SET_COOKIE_REF = "#/components/headers/RefreshCookie";
+  private static final String BAD_REQUEST = "#/components/responses/BadRequest";
+  private static final String UNAUTHORIZED = "#/components/responses/Unauthorized";
 
   private final AuthService service;
   private final SessionProperties session;
@@ -42,17 +52,46 @@ class AuthController {
     this.session = session;
   }
 
+  @Operation(
+      summary = "Iniciar sesión",
+      description =
+          "Devuelve un access token de 15 minutos y pone el refresh token en una cookie"
+              + " `HttpOnly`. Con un email o una contraseña incorrectos, el error es siempre el"
+              + " mismo 401 genérico.")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Sesión iniciada",
+      headers = @Header(name = HttpHeaders.SET_COOKIE, ref = SET_COOKIE_REF))
+  @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
+  @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
   @PostMapping("/login")
   ResponseEntity<AccessTokenResponse> login(@Valid @RequestBody LoginRequest request) {
     return withCookie(service.login(request));
   }
 
+  @Operation(
+      summary = "Renovar el access token",
+      description =
+          "Usa el refresh token de la cookie, lo rota y devuelve uno nuevo. Si llega uno ya usado,"
+              + " se revocan todas las sesiones del usuario. La sesión termina tras 2 horas sin"
+              + " renovar o 7 días después del login.",
+      security = @SecurityRequirement(name = "refreshCookie"))
+  @ApiResponse(
+      responseCode = "200",
+      description = "Token renovado",
+      headers = @Header(name = HttpHeaders.SET_COOKIE, ref = SET_COOKIE_REF))
+  @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
   @PostMapping("/refresh")
   ResponseEntity<AccessTokenResponse> refresh(
       @CookieValue(name = COOKIE, required = false) String refreshToken) {
     return withCookie(service.refresh(refreshToken));
   }
 
+  @Operation(
+      summary = "Cerrar sesión",
+      description = "Revoca el refresh token y borra la cookie. Responde 204 siempre.",
+      security = @SecurityRequirement(name = "refreshCookie"))
+  @ApiResponse(responseCode = "204", description = "Sin contenido")
   @PostMapping("/logout")
   ResponseEntity<Void> logout(@CookieValue(name = COOKIE, required = false) String refreshToken) {
     service.logout(refreshToken);
