@@ -83,3 +83,48 @@ writeSeed(
   ],
   people,
 );
+
+// ---------- teams y team_memberships (H17) ----------
+// Los códigos de los CSV se convierten en subconsultas: la categoría por nombre y sexo, la
+// temporada por nombre y la persona por nombre, apellidos y fecha de nacimiento.
+const categories = Object.fromEntries(readCsv('categories.csv').map((c) => [c.code, c]));
+const categoryId = (code) =>
+  `(SELECT id FROM categories WHERE name = ${text(categories[code].name)}` +
+  ` AND gender = ${text(categories[code].gender)})`;
+const seasonId = (name) => `(SELECT id FROM seasons WHERE name = ${text(name)})`;
+
+const teamRows = readCsv('teams.csv');
+const teams = teamRows.map(
+  (t) =>
+    'INSERT IGNORE INTO teams (season_id, category_id, name, own_club, crest_url, created_at,' +
+    ' updated_at)\n' +
+    `  SELECT ${seasonId(t.season)}, ${categoryId(t.category)}, ${text(t.name)},` +
+    ` ${bool(t.own_club)}, ${text(t.crest_url)}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6);`,
+);
+
+const teamByCode = Object.fromEntries(teamRows.map((t) => [t.code, t]));
+const personByCode = Object.fromEntries(readCsv('people.csv').map((p) => [p.code, p]));
+const memberships = readCsv('team_memberships.csv').map((m) => {
+  const t = teamByCode[m.team];
+  const p = personByCode[m.person];
+  const shirt = m.shirt_number === '' ? 'NULL' : m.shirt_number;
+  return (
+    'INSERT IGNORE INTO team_memberships (team_id, person_id, type, shirt_number, position,' +
+    ' created_at, updated_at)\n' +
+    `  SELECT t.id, p.id, ${text(m.type)}, ${shirt}, ${text(m.position)}, UTC_TIMESTAMP(6),` +
+    ' UTC_TIMESTAMP(6)\n' +
+    `  FROM teams t, people p WHERE t.season_id = ${seasonId(t.season)}` +
+    ` AND t.category_id = ${categoryId(t.category)} AND t.name = ${text(t.name)}` +
+    ` AND p.first_name = ${text(p.first_name)} AND p.last_name = ${text(p.last_name)}` +
+    ` AND p.birth_date <=> ${text(p.birth_date)} AND p.deleted_at IS NULL;`
+  );
+});
+writeSeed(
+  'R__seed_03_teams.sql',
+  [
+    'Semilla de dev y staging: equipos y plantillas de teams.csv y team_memberships.csv',
+    '(docs/04-datos/datos-ejemplo/). No se edita a mano: la escribe scripts/datos-ejemplo/semillas.mjs.',
+    'Es repetible e idempotente: INSERT IGNORE sobre las claves únicas de los equipos y las plantillas.',
+  ],
+  [...teams, ...memberships],
+);

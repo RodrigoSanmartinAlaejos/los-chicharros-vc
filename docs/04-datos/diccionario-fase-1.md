@@ -81,10 +81,12 @@ Cada tabla y columna de la fase 1, con su tipo, si admite nulos y sus reglas. Es
 | `team_id` | `BIGINT UNSIGNED` | No | FK `teams` | Equipo |
 | `person_id` | `BIGINT UNSIGNED` | No | FK `people` | Persona |
 | `type` | `VARCHAR(30)` | No | `ck_team_memberships_type`: `PLAYER`, `COACH` | Jugador o entrenador |
-| `shirt_number` | `TINYINT UNSIGNED` | Sí | Entre 0 y 99; solo jugadores | Dorsal |
-| `position` | `VARCHAR(30)` | Sí | | Posición (colocador, opuesto, central, receptor, líbero) |
+| `shirt_number` | `TINYINT UNSIGNED` | Sí | `ck_team_memberships_shirt_number`: entre 0 y 99; solo jugadores | Dorsal |
+| `position` | `VARCHAR(30)` | Sí | Solo jugadores | Posición (colocador, opuesto, central, receptor, líbero) |
 
-Únicos: (`team_id`, `person_id`, `type`) en `uk_team_memberships_team_person_type` y (`team_id`, `shirt_number`) en `uk_team_memberships_team_shirt` (los nulos no chocan).
+Únicos: (`team_id`, `person_id`, `type`) en `uk_team_memberships_team_person_type` y (`team_id`, `shirt_number`) en `uk_team_memberships_team_shirt` (los nulos no chocan). `ck_team_memberships_coach_without_shirt`: un entrenador no tiene dorsal ni posición (desde el #61).
+
+Al borrar una persona (borrado lógico), sale de las plantillas de las temporadas que aún no han terminado (`seasons.end_date` igual o posterior a hoy), para que su dorsal quede libre; en las de temporadas pasadas se conserva. Al borrar un equipo se borra su plantilla.
 
 ## `competitions` (competiciones)
 

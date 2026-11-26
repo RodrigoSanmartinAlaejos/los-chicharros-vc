@@ -9,16 +9,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
-import org.hibernate.annotations.SQLRestriction;
 
 /**
- * Jugador o entrenador del club. El borrado es lógico: una persona borrada tiene {@code deletedAt}
- * y ninguna consulta de la aplicación la ve, pero su fila sigue ahí para las plantillas y los
- * resultados de temporadas pasadas.
+ * Jugador o entrenador del club. El borrado es lógico: una persona borrada tiene {@code deletedAt},
+ * el panel ya no la encuentra ({@code PersonRepository} la filtra), pero su fila sigue ahí para las
+ * plantillas y los resultados de temporadas pasadas. No se usa {@code @SQLRestriction}: también la
+ * quitaría de esas plantillas al cargarlas con su equipo.
  */
 @Entity
 @Table(name = "people")
-@SQLRestriction("deleted_at IS NULL")
 public class Person extends Auditable {
 
   @Id
@@ -84,5 +83,9 @@ public class Person extends Auditable {
 
   public boolean hasImageConsent() {
     return imageConsent;
+  }
+
+  public boolean isDeleted() {
+    return deletedAt != null;
   }
 }

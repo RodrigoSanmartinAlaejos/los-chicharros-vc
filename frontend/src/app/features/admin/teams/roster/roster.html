@@ -1,0 +1,253 @@
+<section class="roster" aria-labelledby="roster-title">
+  <div class="panel__header">
+    <h2 id="roster-title" #heading tabindex="-1">Plantilla: {{ title() }}</h2>
+    <div class="panel__actions">
+      @if (!addOpen()) {
+        <button type="button" class="button button--primary" (click)="openAdd()">
+          + Añadir a la plantilla
+        </button>
+      }
+      <button type="button" class="button" (click)="closed.emit()">Cerrar</button>
+    </div>
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  @if (addOpen()) {
+    <form class="form form--top" [formGroup]="addForm" (ngSubmit)="add()" novalidate>
+      <h3>Añadir a la plantilla</h3>
+      @if (addError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field field--wide">
+        @if (chosen(); as person) {
+          <span class="field__label">Persona</span>
+          <p class="chosen">
+            <strong>{{ person.lastName }}, {{ person.firstName }}</strong
+            >{{ birthYear(person) }}
+            <button type="button" class="link-button" (click)="chosen.set(null)">Cambiar</button>
+          </p>
+        } @else {
+          <label for="roster-search">Buscar persona</label>
+          <input
+            id="roster-search"
+            type="search"
+            [formControl]="searchControl"
+            autocomplete="off"
+            placeholder="Nombre o apellidos"
+            aria-describedby="roster-search-hint"
+          />
+          <span id="roster-search-hint" class="field__hint"
+            >Escribe al menos dos letras. Si no está, dala de alta antes en Personas.</span
+          >
+          @if (candidates().length > 0) {
+            <ul class="candidates" aria-label="Personas encontradas">
+              @for (person of candidates(); track person.id) {
+                <li>
+                  <button type="button" class="link-button" (click)="choose(person)">
+                    {{ person.lastName }}, {{ person.firstName }}{{ birthYear(person) }}
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        }
+      </div>
+      <fieldset class="field field--wide types">
+        <legend class="field__label">Papel</legend>
+        <label><input type="radio" formControlName="type" value="PLAYER" /> Jugador</label>
+        <label><input type="radio" formControlName="type" value="COACH" /> Entrenador</label>
+      </fieldset>
+      @if (addForm.controls.type.value === 'PLAYER') {
+        <div class="field">
+          <label for="roster-shirt">Dorsal (opcional)</label>
+          <input
+            id="roster-shirt"
+            type="number"
+            min="0"
+            max="99"
+            formControlName="shirtNumber"
+            aria-describedby="roster-shirt-error"
+            [attr.aria-invalid]="addErrorOf('shirtNumber') ? 'true' : null"
+          />
+          <p id="roster-shirt-error" class="field__error">{{ addErrorOf('shirtNumber') }}</p>
+        </div>
+        <div class="field">
+          <label for="roster-position">Posición (opcional)</label>
+          <select id="roster-position" formControlName="position">
+            <option value="">Sin posición</option>
+            @for (position of positions; track position) {
+              <option [value]="position">{{ positionLabel(position) }}</option>
+            }
+          </select>
+        </div>
+      }
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="adding()">
+          {{ adding() ? 'Añadiendo…' : 'Añadir' }}
+        </button>
+        <button type="button" class="button" (click)="closeAdd()">Cancelar</button>
+      </div>
+    </form>
+  }
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando la plantilla…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se ha podido cargar la plantilla.
+          <button type="button" class="link-button" (click)="load()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (team(); as current) {
+          <h3>Jugadores</h3>
+          @if (current.players.length === 0) {
+            <p class="state">Todavía no hay jugadores.</p>
+          } @else {
+            <table class="panel__table">
+              <thead>
+                <tr>
+                  <th scope="col">Dorsal</th>
+                  <th scope="col">Jugador</th>
+                  <th scope="col">Posición</th>
+                  <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (member of current.players; track member.id) {
+                  <tr>
+                    @if (editingId() === member.id) {
+                      <td colspan="4">
+                        <form
+                          class="inline-form"
+                          [formGroup]="editForm"
+                          (ngSubmit)="saveEdit(member)"
+                          novalidate
+                        >
+                          <strong>{{ member.person.displayName }}</strong>
+                          <div class="field">
+                            <label [for]="'edit-shirt-' + member.id">Dorsal</label>
+                            <input
+                              [id]="'edit-shirt-' + member.id"
+                              type="number"
+                              min="0"
+                              max="99"
+                              formControlName="shirtNumber"
+                              [attr.aria-invalid]="editErrorOf('shirtNumber') ? 'true' : null"
+                            />
+                          </div>
+                          <div class="field">
+                            <label [for]="'edit-position-' + member.id">Posición</label>
+                            <select [id]="'edit-position-' + member.id" formControlName="position">
+                              <option value="">Sin posición</option>
+                              @for (position of positions; track position) {
+                                <option [value]="position">{{ positionLabel(position) }}</option>
+                              }
+                            </select>
+                          </div>
+                          <button type="submit" class="button button--primary">Guardar</button>
+                          <button type="button" class="button" (click)="editingId.set(null)">
+                            Cancelar
+                          </button>
+                          @if (editErrorOf('shirtNumber') ?? editError(); as message) {
+                            <p class="field__error" role="alert">{{ message }}</p>
+                          }
+                        </form>
+                      </td>
+                    } @else {
+                      <td data-label="Dorsal">
+                        <span class="shirt">{{ member.shirtNumber ?? '—' }}</span>
+                      </td>
+                      <td data-label="Jugador">{{ member.person.displayName }}</td>
+                      <td data-label="Posición">{{ positionLabel(member.position) }}</td>
+                      <td>
+                        @if (confirmingId() === member.id) {
+                          <div
+                            class="confirm"
+                            role="group"
+                            [attr.aria-label]="'Quitar a ' + member.person.displayName"
+                          >
+                            <span>¿Quitar a {{ member.person.displayName }}?</span>
+                            <button
+                              type="button"
+                              class="button button--danger"
+                              (click)="confirmRemove(member)"
+                            >
+                              Sí, quitar
+                            </button>
+                            <button type="button" class="button" (click)="confirmingId.set(null)">
+                              Cancelar
+                            </button>
+                          </div>
+                        } @else {
+                          <div class="panel__actions">
+                            <button type="button" class="link-button" (click)="startEdit(member)">
+                              Editar<span class="visually-hidden">
+                                a {{ member.person.displayName }}</span
+                              >
+                            </button>
+                            <button
+                              type="button"
+                              class="link-button link-button--danger"
+                              (click)="askRemove(member)"
+                            >
+                              Quitar<span class="visually-hidden">
+                                a {{ member.person.displayName }}</span
+                              >
+                            </button>
+                          </div>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          <h3 class="coaches-title">Entrenadores</h3>
+          @if (current.coaches.length === 0) {
+            <p class="state">Todavía no hay entrenadores.</p>
+          } @else {
+            <ul class="coaches">
+              @for (member of current.coaches; track member.id) {
+                <li>
+                  <span>{{ member.person.displayName }}</span>
+                  @if (confirmingId() === member.id) {
+                    <span class="confirm">
+                      <button
+                        type="button"
+                        class="button button--danger"
+                        (click)="confirmRemove(member)"
+                      >
+                        Sí, quitar
+                      </button>
+                      <button type="button" class="button" (click)="confirmingId.set(null)">
+                        Cancelar
+                      </button>
+                    </span>
+                  } @else {
+                    <button
+                      type="button"
+                      class="link-button link-button--danger"
+                      (click)="askRemove(member)"
+                    >
+                      Quitar<span class="visually-hidden"> a {{ member.person.displayName }}</span>
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        }
+      }
+    }
+  </div>
+</section>
