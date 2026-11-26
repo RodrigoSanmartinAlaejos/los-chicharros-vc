@@ -114,6 +114,20 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     return unauthorized(UNAUTHORIZED_DETAIL, request);
   }
 
+  /** Límite de peticiones superado: 429, con cuántos segundos hay que esperar. */
+  @ExceptionHandler(TooManyRequestsException.class)
+  ResponseEntity<ProblemDetail> handleTooManyRequests(
+      TooManyRequestsException ex, HttpServletRequest request) {
+    var problem =
+        withInstance(
+            ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage()),
+            request);
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()))
+        .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+        .body(problem);
+  }
+
   /** Con sesión pero sin el rol que pide la matriz de permisos: 403. */
   @ExceptionHandler(AccessDeniedException.class)
   ProblemDetail handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {

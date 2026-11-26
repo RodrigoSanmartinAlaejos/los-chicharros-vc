@@ -58,7 +58,8 @@ class OpenApiConfig {
           "Unauthorized", "Sin sesión, token caducado o credenciales incorrectas",
           "Forbidden", "Sin permiso para esta acción",
           "NotFound", "No existe",
-          "Conflict", "Duplicado o con registros que dependen de él");
+          "Conflict", "Duplicado o con registros que dependen de él",
+          "TooManyRequests", "Demasiadas peticiones: más de 20 por minuto en `/auth/**`");
 
   @Bean
   OpenAPI openApi() {

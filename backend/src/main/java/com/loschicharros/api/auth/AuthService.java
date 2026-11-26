@@ -23,6 +23,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final TokenService tokens;
   private final RefreshTokenService refreshTokens;
+  private final LoginAttempts attempts;
 
   /**
    * Hash con el que se compara cuando el email no existe, para que la respuesta tarde lo mismo y no
@@ -34,29 +35,42 @@ public class AuthService {
       UserRepository users,
       PasswordEncoder passwordEncoder,
       TokenService tokens,
-      RefreshTokenService refreshTokens) {
+      RefreshTokenService refreshTokens,
+      LoginAttempts attempts) {
     this.users = users;
     this.passwordEncoder = passwordEncoder;
     this.tokens = tokens;
     this.refreshTokens = refreshTokens;
+    this.attempts = attempts;
     this.dummyHash = passwordEncoder.encode("contraseña-que-nunca-coincide");
   }
 
   /**
-   * Comprueba las credenciales y abre una sesión: access token y refresh token.
+   * Comprueba las credenciales y abre una sesión: access token y refresh token. Tras 5 fallos
+   * seguidos para un email desde una IP, esa combinación se bloquea 15 minutos ({@link
+   * LoginAttempts}) y la respuesta es la misma aunque la contraseña sea buena.
    *
-   * @throws InvalidCredentialsException si el email no existe, la contraseña no coincide o la
-   *     cuenta no puede entrar; siempre la misma
+   * @param ip IP del cliente, para el bloqueo por intentos fallidos
+   * @throws InvalidCredentialsException si el email no existe, la contraseña no coincide, la cuenta
+   *     no puede entrar o el email está bloqueado desde esa IP; siempre la misma
    */
   @Transactional
-  public IssuedSession login(LoginRequest request) {
-    var user = users.findByEmail(User.normalizeEmail(request.email()));
+  public IssuedSession login(LoginRequest request, String ip) {
+    var email = User.normalizeEmail(request.email());
+    var user = users.findByEmail(email);
     var hash = user.map(User::getPasswordHash).orElse(dummyHash);
+    // Se compara siempre, también si está bloqueado, para que la respuesta tarde lo mismo
     var matches = passwordEncoder.matches(request.password(), hash);
+    if (attempts.isBlocked(email, ip)) {
+      log.warn("Login rechazado: demasiados intentos fallidos desde {}", ip);
+      throw new InvalidCredentialsException();
+    }
     if (user.isEmpty() || !matches || !user.get().canLogIn()) {
+      attempts.recordFailure(email, ip);
       log.info("Login fallido");
       throw new InvalidCredentialsException();
     }
+    attempts.recordSuccess(email, ip);
     log.info("Login correcto del usuario {}", user.get().getId());
     var refresh = refreshTokens.startSession(user.get().getId());
     return new IssuedSession(accessTokenFor(user.get()), refresh.value(), refresh.expiresAt());
