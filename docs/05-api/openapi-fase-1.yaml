@@ -640,6 +640,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PersonPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -819,6 +821,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TeamSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
     post:
       tags:
       - Equipos
@@ -1076,6 +1080,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CompetitionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
     post:
       tags:
       - Competiciones
@@ -1370,6 +1376,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MatchPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
     post:
       tags:
       - Partidos

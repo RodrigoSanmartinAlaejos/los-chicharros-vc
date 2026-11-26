@@ -9,7 +9,7 @@ import { CrudPanel } from '../crud-panel';
   selector: 'cv-seasons-panel',
   imports: [ReactiveFormsModule],
   templateUrl: './seasons-panel.html',
-  styleUrl: '../crud-panel.scss',
+  styleUrl: '../../../../shared/admin/crud-panel.scss',
 })
 export class SeasonsPanel extends CrudPanel<Season, SeasonRequest> {
   protected readonly resource = inject(ConfigurationApi).seasons;

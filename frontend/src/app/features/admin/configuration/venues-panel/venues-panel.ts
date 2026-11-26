@@ -14,7 +14,7 @@ import { CrudPanel } from '../crud-panel';
   selector: 'cv-venues-panel',
   imports: [ReactiveFormsModule],
   templateUrl: './venues-panel.html',
-  styleUrl: '../crud-panel.scss',
+  styleUrl: '../../../../shared/admin/crud-panel.scss',
 })
 export class VenuesPanel extends CrudPanel<Venue, VenueRequest> {
   protected readonly resource = inject(ConfigurationApi).venues;
