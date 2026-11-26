@@ -145,7 +145,7 @@ class OpenApiConfig {
       default ->
           responses.addApiResponse("200", new ApiResponse().description("OK").content(content));
     }
-    if (operation.getRequestBody() != null) {
+    if (operation.getRequestBody() != null || hasQueryParameters(operation)) {
       responses.addApiResponse("400", error("BadRequest"));
     }
     if (handler.hasMethodAnnotation(PreAuthorize.class)) {
@@ -174,6 +174,12 @@ class OpenApiConfig {
     return mapping == null || mapping.method().length == 0
         ? RequestMethod.GET
         : mapping.method()[0];
+  }
+
+  /** Filtros, página y orden: si no son válidos, la respuesta es 400. */
+  private static boolean hasQueryParameters(Operation operation) {
+    return operation.getParameters() != null
+        && operation.getParameters().stream().anyMatch(p -> "query".equals(p.getIn()));
   }
 
   private static boolean hasIdParameter(Operation operation) {

@@ -3,7 +3,7 @@ import { Directive, OnInit, signal } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { CrudResource } from './configuration.api';
-import { applyProblem, errorMessage } from './problem';
+import { applyProblem, errorMessage } from '../../../shared/admin/problem';
 
 /**
  * Lógica común de los paneles de configuración: cargar la lista, crear y editar con un formulario,

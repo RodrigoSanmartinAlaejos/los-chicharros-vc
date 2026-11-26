@@ -33,8 +33,8 @@ describe('AdminLayout', () => {
     const page = fixture.nativeElement as HTMLElement;
     const links = Array.from(page.querySelectorAll('.admin__list a'));
 
-    expect(links.map((a) => a.textContent?.trim())).toEqual(['Configuración']);
-    expect(links[0].getAttribute('href')).toBe('/gestion/configuracion');
+    expect(links.map((a) => a.textContent?.trim())).toEqual(['Personas', 'Configuración']);
+    expect(links[0].getAttribute('href')).toBe('/gestion/personas');
     expect(page.querySelector('.admin__public-link')?.getAttribute('href')).toBe('/');
     expect(page.querySelector('main#contenido')).toBeTruthy();
   });

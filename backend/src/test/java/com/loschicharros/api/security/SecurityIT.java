@@ -92,6 +92,18 @@ class SecurityIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void shouldReturnForbiddenWhenNonAdminReadsPeople() throws Exception {
+    // Datos personales: solo los lee el administrador (matriz de permisos)
+    var userId = authTokens.createUser("socio@loschicharros.test", "una-contrasena-larga", true);
+
+    mockMvc
+        .perform(
+            get("/api/v1/people")
+                .header(HttpHeaders.AUTHORIZATION, authTokens.bearer(userId, List.of())))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void shouldRequireSessionForUnknownApiRoutes() throws Exception {
     // Sin sesión no se distingue una ruta que no existe de una protegida
     mockMvc.perform(get("/api/v1/no-existe")).andExpect(status().isUnauthorized());

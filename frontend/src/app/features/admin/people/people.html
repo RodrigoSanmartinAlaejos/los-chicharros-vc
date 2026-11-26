@@ -1,0 +1,220 @@
+<h1>Personas</h1>
+<p class="intro">
+  Jugadores y entrenadores del club. Después podrás ponerlos en las plantillas de cada equipo.
+</p>
+
+<section aria-labelledby="people-title">
+  <div class="panel__header">
+    <h2 id="people-title" class="visually-hidden">Listado de personas</h2>
+    <div class="field search">
+      <label for="people-search">Buscar por nombre o apellidos</label>
+      <input
+        id="people-search"
+        type="search"
+        [formControl]="searchControl"
+        maxlength="100"
+        autocomplete="off"
+        placeholder="Por ejemplo, Lucía"
+      />
+    </div>
+    @if (!formOpen()) {
+      <button type="button" class="button button--primary" (click)="startCreate()">
+        + Nueva persona
+      </button>
+    }
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  @if (formOpen()) {
+    <form class="form form--top" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h3>{{ editingId() === null ? 'Nueva persona' : 'Editar persona' }}</h3>
+      @if (formError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field">
+        <label for="person-first-name">Nombre</label>
+        <input
+          id="person-first-name"
+          formControlName="firstName"
+          maxlength="60"
+          autocomplete="off"
+          aria-describedby="person-first-name-error"
+          [attr.aria-invalid]="errorOf('firstName') ? 'true' : null"
+        />
+        <p id="person-first-name-error" class="field__error">{{ errorOf('firstName') }}</p>
+      </div>
+      <div class="field">
+        <label for="person-last-name">Apellidos</label>
+        <input
+          id="person-last-name"
+          formControlName="lastName"
+          maxlength="100"
+          autocomplete="off"
+          aria-describedby="person-last-name-error"
+          [attr.aria-invalid]="errorOf('lastName') ? 'true' : null"
+        />
+        <p id="person-last-name-error" class="field__error">{{ errorOf('lastName') }}</p>
+      </div>
+      <div class="field">
+        <label for="person-birth-date">Fecha de nacimiento (opcional)</label>
+        <input
+          id="person-birth-date"
+          type="date"
+          formControlName="birthDate"
+          [max]="today"
+          aria-describedby="person-birth-date-hint person-birth-date-error"
+          [attr.aria-invalid]="errorOf('birthDate') ? 'true' : null"
+        />
+        <span id="person-birth-date-hint" class="field__hint">
+          Nunca se muestra en la web pública.
+        </span>
+        <p id="person-birth-date-error" class="field__error">{{ errorOf('birthDate') }}</p>
+      </div>
+      <div class="field field--check field--wide">
+        <input
+          id="person-image-consent"
+          type="checkbox"
+          formControlName="imageConsent"
+          aria-describedby="person-image-consent-hint"
+        />
+        <label for="person-image-consent">Consentimiento de imagen</label>
+        <span id="person-image-consent-hint" class="field__hint"
+          >Sin él, la web pública muestra una silueta en lugar de su foto.</span
+        >
+      </div>
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" class="button" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  }
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando personas…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las personas.
+          <button type="button" class="link-button" (click)="reload()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (result(); as page) {
+          @if (page.totalElements === 0) {
+            <p class="state">
+              @if (searched()) {
+                Ninguna persona coincide con «{{ searched() }}».
+              } @else {
+                Todavía no hay personas.
+              }
+            </p>
+          } @else {
+            <p class="count" aria-live="polite">
+              {{ page.totalElements }} {{ page.totalElements === 1 ? 'persona' : 'personas' }}
+              @if (searched()) {
+                con «{{ searched() }}»
+              }
+            </p>
+            <table class="panel__table">
+              <thead>
+                <tr>
+                  <th scope="col">Persona</th>
+                  <th scope="col">Nacimiento</th>
+                  <th scope="col">Imagen</th>
+                  <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (person of page.content; track person.id) {
+                  <tr>
+                    <td data-label="Persona">
+                      <span
+                        ><strong>{{ person.lastName }}</strong
+                        >, {{ person.firstName }}</span
+                      >
+                    </td>
+                    <td data-label="Nacimiento">{{ formatBirthDate(person.birthDate) }}</td>
+                    <td data-label="Imagen">
+                      @if (person.imageConsent) {
+                        <span class="badge">Con consentimiento</span>
+                      } @else {
+                        Sin consentimiento
+                      }
+                    </td>
+                    <td>
+                      @if (confirmingId() === person.id) {
+                        <div
+                          class="confirm"
+                          role="group"
+                          [attr.aria-label]="'Borrar a ' + fullName(person)"
+                        >
+                          <span>¿Borrar a {{ fullName(person) }}?</span>
+                          <button
+                            type="button"
+                            class="button button--danger"
+                            (click)="confirmDelete(person)"
+                          >
+                            Sí, borrar
+                          </button>
+                          <button type="button" class="button" (click)="confirmingId.set(null)">
+                            Cancelar
+                          </button>
+                        </div>
+                      } @else {
+                        <div class="panel__actions">
+                          <button type="button" class="link-button" (click)="startEdit(person)">
+                            Editar<span class="visually-hidden"> a {{ fullName(person) }}</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="link-button link-button--danger"
+                            (click)="askDelete(person)"
+                          >
+                            Borrar<span class="visually-hidden"> a {{ fullName(person) }}</span>
+                          </button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            @if (page.totalPages > 1) {
+              <nav class="pager" aria-label="Páginas de personas">
+                <button
+                  type="button"
+                  class="button"
+                  [disabled]="page.page === 0"
+                  (click)="goToPage(page.page - 1)"
+                >
+                  Anterior
+                </button>
+                <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+                <button
+                  type="button"
+                  class="button"
+                  [disabled]="page.page + 1 >= page.totalPages"
+                  (click)="goToPage(page.page + 1)"
+                >
+                  Siguiente
+                </button>
+              </nav>
+            }
+          }
+        }
+      }
+    }
+  </div>
+  <p class="footnote">
+    Al borrar a una persona deja de aparecer aquí, pero se conserva en las plantillas y los
+    resultados de temporadas pasadas.
+  </p>
+</section>

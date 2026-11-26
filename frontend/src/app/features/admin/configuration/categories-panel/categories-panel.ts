@@ -15,7 +15,7 @@ import { CrudPanel } from '../crud-panel';
   selector: 'cv-categories-panel',
   imports: [ReactiveFormsModule],
   templateUrl: './categories-panel.html',
-  styleUrl: '../crud-panel.scss',
+  styleUrl: '../../../../shared/admin/crud-panel.scss',
 })
 export class CategoriesPanel extends CrudPanel<Category, CategoryRequest> {
   protected readonly resource = inject(ConfigurationApi).categories;

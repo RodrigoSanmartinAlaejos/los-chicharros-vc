@@ -69,3 +69,5 @@ Decisiones tomadas al escribir el contrato que cambian o completan el [plan](../
 - **`GET /matches` paginado**, con filtros por equipo, pabellón, fechas y estado.
 - **Tamaño de página por defecto: 20**; las noticias de la web piden 10 (H02).
 - **Imágenes JPG, PNG o WebP de 5 MB como máximo**; 413 si se pasa.
+- **Listados con parámetros: 400 si no son válidos** (añadido el 2026-11-26, en el #60). La tabla «Métodos y códigos» ya lo decía, pero el contrato solo lo recogía en `GET /news`; ahora también en `GET /people`, `/teams`, `/competitions` y `/matches`. Por ejemplo, ordenar por un campo que no se puede ordenar (`?sort=password`) devuelve 400 con `errors` en el campo `sort`.
+- **Búsqueda de personas** (`GET /people?search=`): busca el texto dentro del nombre, de los apellidos y del nombre completo, sin distinguir mayúsculas ni tildes («lucia» encuentra a «Lucía»). Ordena por apellidos y nombre si no se pide otro orden; se puede ordenar por `firstName`, `lastName` o `birthDate`.

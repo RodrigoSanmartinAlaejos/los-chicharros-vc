@@ -1,6 +1,6 @@
 # Diccionario de datos de la fase 1
 
-Última revisión: 2026-11-22.
+Última revisión: 2026-11-26.
 
 Cada tabla y columna de la fase 1, con su tipo, si admite nulos y sus reglas. Es la base de las migraciones Flyway: si una migración cambia algo de aquí, el diccionario se actualiza en el mismo PR. El diagrama está en el [modelo entidad-relación](modelo-er.md) y las convenciones de nombres en las [reglas técnicas](../07-desarrollo/reglas-tecnicas.md).
 
@@ -189,14 +189,16 @@ Cada tabla en su migración, en este orden para respetar las claves foráneas:
 | `V4__create_categories.sql` | `categories` |
 | `V4_1__insert_categories.sql` | Las diez categorías del club (catálogo, también en producción) |
 | `V5__create_venues.sql` | `venues` |
-| `V6__create_teams.sql` | `teams` |
-| `V7__create_people.sql` | `people` |
+| `V6__create_people.sql` | `people` (desde el #60) |
+| `V7__create_teams.sql` | `teams` |
 | `V8__create_team_memberships.sql` | `team_memberships` |
 | `V9__create_competitions.sql` | `competitions` |
 | `V10__create_matchdays.sql` | `matchdays` |
 | `V11__create_matches.sql` | `matches` |
 | `V12__create_standings.sql` | `standings` |
 | `V13__create_news_articles.sql` | `news_articles` |
+
+`people` va antes que `teams` porque su historia (H16) se hizo antes; ninguna de las dos depende de la otra, y `team_memberships` apunta a las dos.
 
 Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones.
 

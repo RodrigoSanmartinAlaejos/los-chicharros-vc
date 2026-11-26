@@ -1,0 +1,39 @@
+// Lo propio de la pantalla de personas: buscador, recuento, paginación y nota final. El resto, en
+// shared/admin/crud-panel.scss.
+.intro,
+.footnote,
+.count {
+  color: var(--color-text-secondary);
+}
+
+.intro {
+  margin-bottom: var(--space-6);
+}
+
+.search {
+  flex: 1 1 18rem;
+  max-width: 28rem;
+}
+
+.count {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-small);
+}
+
+.form--top {
+  margin: 0 0 var(--space-4);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.footnote {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-small);
+}

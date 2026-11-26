@@ -1,6 +1,6 @@
 # Datos de ejemplo de la temporada 2026-27
 
-Última revisión: 2026-11-23.
+Última revisión: 2026-11-26.
 
 Datos **ficticios** para desarrollo (`dev`), pruebas (`staging`) y la demo: equipos, personas, competiciones, jornadas, partidos, clasificaciones y noticias de la temporada 2026-27. Siguen la [ficha del club](../01-vision/club.md) y las columnas del [diccionario de datos de la fase 1](diccionario-fase-1.md). Ninguna persona es real y no hay fotos de personas (regla de las [pautas](../00-plan/pautas-proyecto.md)).
 
@@ -16,6 +16,7 @@ node scripts/datos-ejemplo/generar.mjs --corte=2027-02-01
 - **Fecha de corte:** los partidos anteriores salen jugados (`FINISHED`) con su marcador. Los posteriores salen programados (`SCHEDULED`) y sin marcador. La clasificación y las crónicas se calculan con los jugados. Antes de una demo se puede volver a generar con una fecha de corte cercana.
 - **No se editan a mano:** si hay que cambiar algo, se cambia el script y se vuelve a ejecutar, en el mismo PR.
 - **De CSV a semilla:** cuando existan las migraciones de la fase 1, la semilla `db/seed` se escribe a partir de estos ficheros. Los CSV usan códigos legibles (`CADETE_F-LCV`, `P012`) en lugar de ids. Al pasar a SQL, cada código se convierte en una subconsulta o una variable, para no depender de los `AUTO_INCREMENT`. Ya existe la de configuración (`R__seed_01_configuration.sql`: `seasons.csv` y `venues.csv`); `categories.csv` no va en la semilla porque lo carga la migración `V4_1__insert_categories.sql`.
+- **Semillas generadas:** desde el #60, las semillas de las tablas que no tienen clave única natural las escribe `node scripts/datos-ejemplo/semillas.mjs` (la primera, `R__seed_02_people.sql` desde `people.csv`). Cada fila se inserta solo si no existe ya una igual (`INSERT … SELECT … WHERE NOT EXISTS`), así que volver a aplicar la semilla no duplica nada y una persona borrada en el panel no reaparece. Cada historia que crea una tabla añade su semilla al script y la vuelve a ejecutar en el mismo PR; los ficheros generados no se editan a mano.
 
 ## Ficheros
 
