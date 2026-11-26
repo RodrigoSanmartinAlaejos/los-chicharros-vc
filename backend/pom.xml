@@ -32,6 +32,8 @@
     <jacoco-maven-plugin.version>0.8.16</jacoco-maven-plugin.version>
     <!-- Documentación de la API en /swagger-ui (Spring Boot no la gestiona) -->
     <springdoc.version>3.2.1</springdoc.version>
+    <!-- Límite de peticiones por IP en /api/v1/auth/** (reglas técnicas, regla 5 de autenticación) -->
+    <bucket4j.version>8.23.0</bucket4j.version>
   </properties>
 
   <dependencies>
@@ -67,6 +69,15 @@
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>${springdoc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j_jdk17-core</artifactId>
+      <version>${bucket4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
     </dependency>
     <dependency>
       <groupId>com.mysql</groupId>

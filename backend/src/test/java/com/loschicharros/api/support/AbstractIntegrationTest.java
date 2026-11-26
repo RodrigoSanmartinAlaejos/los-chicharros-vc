@@ -1,5 +1,7 @@
 package com.loschicharros.api.support;
 
+import com.loschicharros.api.auth.AuthRateLimitFilter;
+import com.loschicharros.api.auth.LoginAttempts;
 import com.loschicharros.api.support.probe.ProbeController;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +35,15 @@ public abstract class AbstractIntegrationTest {
   @Autowired protected TestCurrentUser currentUser;
   @Autowired protected RecordingEmailSender emailSender;
   @Autowired private DatabaseCleaner databaseCleaner;
+  @Autowired private LoginAttempts loginAttempts;
+  @Autowired private AuthRateLimitFilter authRateLimit;
 
   @BeforeEach
   void resetState() {
     databaseCleaner.clean();
+    // Los contadores del login viven en memoria: cada test empieza sin intentos ni peticiones
+    loginAttempts.clear();
+    authRateLimit.clear();
     currentUser.clear();
     emailSender.clear();
   }

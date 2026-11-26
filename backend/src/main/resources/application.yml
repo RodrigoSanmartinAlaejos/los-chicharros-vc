@@ -48,6 +48,12 @@ app:
     refresh-token-ttl: 2h
     max-duration: 7d
     cookie-secure: true
+  # Fuerza bruta en el login: 5 fallos seguidos por email + IP bloquean 15 minutos, y cada IP tiene
+  # como mucho 20 peticiones por minuto en /api/v1/auth/** (reglas técnicas, regla 5 de autenticación)
+  login-protection:
+    max-failures: 5
+    block-duration: 15m
+    requests-per-minute: 20
   # Administrador inicial: se crea al arrancar si no hay ninguno
   admin:
     email: ${ADMIN_EMAIL:}

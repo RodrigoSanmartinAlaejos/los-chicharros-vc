@@ -43,6 +43,7 @@ class AuthController {
   private static final String SET_COOKIE_REF = "#/components/headers/RefreshCookie";
   private static final String BAD_REQUEST = "#/components/responses/BadRequest";
   private static final String UNAUTHORIZED = "#/components/responses/Unauthorized";
+  private static final String TOO_MANY_REQUESTS = "#/components/responses/TooManyRequests";
 
   private final AuthService service;
   private final SessionProperties session;
@@ -56,17 +57,19 @@ class AuthController {
       summary = "Iniciar sesión",
       description =
           "Devuelve un access token de 15 minutos y pone el refresh token en una cookie"
-              + " `HttpOnly`. Con un email o una contraseña incorrectos, el error es siempre el"
-              + " mismo 401 genérico.")
+              + " `HttpOnly`. Tras 5 fallos seguidos para un email desde una IP, esa combinación se"
+              + " bloquea 15 minutos; el error es siempre el mismo 401 genérico.")
   @ApiResponse(
       responseCode = "200",
       description = "Sesión iniciada",
       headers = @Header(name = HttpHeaders.SET_COOKIE, ref = SET_COOKIE_REF))
   @ApiResponse(responseCode = "400", ref = BAD_REQUEST)
   @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
+  @ApiResponse(responseCode = "429", ref = TOO_MANY_REQUESTS)
   @PostMapping("/login")
-  ResponseEntity<AccessTokenResponse> login(@Valid @RequestBody LoginRequest request) {
-    return withCookie(service.login(request));
+  ResponseEntity<AccessTokenResponse> login(
+      @Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+    return withCookie(service.login(request, http.getRemoteAddr()));
   }
 
   @Operation(
@@ -81,6 +84,7 @@ class AuthController {
       description = "Token renovado",
       headers = @Header(name = HttpHeaders.SET_COOKIE, ref = SET_COOKIE_REF))
   @ApiResponse(responseCode = "401", ref = UNAUTHORIZED)
+  @ApiResponse(responseCode = "429", ref = TOO_MANY_REQUESTS)
   @PostMapping("/refresh")
   ResponseEntity<AccessTokenResponse> refresh(
       @CookieValue(name = COOKIE, required = false) String refreshToken) {
@@ -89,9 +93,10 @@ class AuthController {
 
   @Operation(
       summary = "Cerrar sesión",
-      description = "Revoca el refresh token y borra la cookie. Responde 204 siempre.",
+      description = "Revoca el refresh token y borra la cookie.",
       security = @SecurityRequirement(name = "refreshCookie"))
   @ApiResponse(responseCode = "204", description = "Sin contenido")
+  @ApiResponse(responseCode = "429", ref = TOO_MANY_REQUESTS)
   @PostMapping("/logout")
   ResponseEntity<Void> logout(@CookieValue(name = COOKIE, required = false) String refreshToken) {
     service.logout(refreshToken);

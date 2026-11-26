@@ -91,6 +91,7 @@ class StandingServiceTest {
 - No se usa `@Transactional` en los tests de endpoints. Si el test abre la transacción, el controlador serializa dentro de ella y se ocultan los `LazyInitializationException` que sí saldrían en producción (`open-in-view` está desactivado).
 - Para tests de repositorio con consultas propias sí se puede usar `@Transactional` (se deshace al terminar).
 - Para autenticarse, el test pide el token al servicio que emite los JWT, no al endpoint de login. El login tiene límite de 20 peticiones por minuto y rompería la suite. Solo los tests del propio login llaman a `/api/v1/auth/login`.
+- Los contadores del login (intentos fallidos y peticiones por IP) viven en memoria: `AbstractIntegrationTest` los vacía antes de cada test, igual que la base de datos. Para simular otra IP, la petición lleva `.with(request -> { request.setRemoteAddr("203.0.113.7"); return request; })` (`LoginProtectionIT`). El paso del tiempo (los 15 minutos del bloqueo) se prueba en un test unitario con un `Clock` que avanza a mano (`LoginAttemptsTest`).
 
 ```java
 @SpringBootTest
