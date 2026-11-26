@@ -8,6 +8,7 @@ import com.loschicharros.api.people.dto.PersonResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,9 +29,11 @@ public class PersonService {
   private static final Sort DEFAULT_SORT = Sort.by("lastName", "firstName", "id");
 
   private final PersonRepository people;
+  private final ApplicationEventPublisher events;
 
-  public PersonService(PersonRepository people) {
+  public PersonService(PersonRepository people, ApplicationEventPublisher events) {
     this.people = people;
+    this.events = events;
   }
 
   /**
@@ -83,17 +86,22 @@ public class PersonService {
   }
 
   /**
-   * Borrado lógico: la persona deja de aparecer, pero su fila se conserva para el historial.
+   * Borrado lógico: la persona deja de aparecer, pero su fila se conserva para el historial. Avisa
+   * con {@link PersonDeletedEvent} para que las plantillas de las temporadas en curso la quiten;
+   * las de temporadas pasadas la conservan.
    *
    * @throws ResourceNotFoundException si no existe o ya está borrada
    */
   @Transactional
   public void delete(Long id) {
     get(id).markDeleted(Instant.now().truncatedTo(ChronoUnit.MICROS));
+    events.publishEvent(new PersonDeletedEvent(id));
   }
 
   private Person get(Long id) {
-    return people.findById(id).orElseThrow(() -> new ResourceNotFoundException(RESOURCE, id));
+    return people
+        .findByIdAndDeletedAtIsNull(id)
+        .orElseThrow(() -> new ResourceNotFoundException(RESOURCE, id));
   }
 
   /** Añade el orden por defecto como desempate y rechaza los campos que no se pueden ordenar. */

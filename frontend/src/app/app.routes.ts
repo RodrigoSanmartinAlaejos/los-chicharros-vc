@@ -23,6 +23,11 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'configuracion' },
       {
+        path: 'equipos',
+        title: 'Equipos',
+        loadComponent: () => import('./features/admin/teams/teams').then((m) => m.Teams),
+      },
+      {
         path: 'personas',
         title: 'Personas',
         loadComponent: () => import('./features/admin/people/people').then((m) => m.People),

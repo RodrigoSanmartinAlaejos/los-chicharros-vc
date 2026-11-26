@@ -1,0 +1,21 @@
+// Lo propio de la pantalla de equipos: filtros y fila seleccionada. El resto, en
+// shared/admin/crud-panel.scss.
+
+.intro {
+  margin-bottom: var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.form--top {
+  margin: 0 0 var(--space-4);
+}
+
+tr.selected td {
+  background: var(--color-muted);
+}
