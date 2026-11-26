@@ -1,6 +1,6 @@
 # Reglas técnicas: lenguajes, ramas y entornos
 
-Última revisión: 2026-11-22.
+Última revisión: 2026-11-26.
 
 Estas reglas son obligatorias para todo el código del proyecto: cada lenguaje tiene sus convenciones y cada rama tiene su propio entorno y su propia base de datos, sin cruces.
 
@@ -257,6 +257,7 @@ Solo la configuración exclusiva del administrador (usuarios, roles e historial)
 14. Los emails se envían siempre a través de la interfaz `EmailSender`; la implementación la elige el perfil: SMTP contra Mailpit en `dev` y la API HTTP de Brevo (puerto 443) en `staging` y `prod`, porque Render gratuito bloquea los puertos SMTP 25, 465 y 587.
 15. El cuerpo de las noticias se guarda en Markdown. El backend lo convierte a HTML y lo sanea con una lista blanca de etiquetas (OWASP Java HTML Sanitizer) antes de devolverlo; el frontend nunca sanea por su cuenta ni confía en HTML que no venga de ahí.
 16. Los tests de integración usan siempre MySQL real con Testcontainers. No se usa H2. Cómo se escriben y se ejecutan todos los tests: [guía de tests](guia-tests.md).
+17. La documentación de la API se genera desde el código con springdoc (`/swagger-ui`, JSON en `/v3/api-docs`). Cada controlador lleva `@Tag` con la etiqueta del contrato (`docs/05-api/openapi-fase-1.yaml`) y cada operación `@Operation(summary = …)` con su resumen. El código de éxito, los errores y el candado del access token los añade `OpenApiConfig` según la tabla «Métodos y respuestas» y el `@PreAuthorize`; solo las rutas que no siguen la tabla (autenticación) declaran sus respuestas con `@ApiResponse`. `OpenApiIT` falla si lo generado se separa del contrato. En `prod`, `/swagger-ui` es solo de lectura (sin «Try it out»).
 
 **Autenticación**
 

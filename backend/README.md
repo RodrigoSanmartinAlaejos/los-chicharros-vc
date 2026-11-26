@@ -29,9 +29,20 @@ $b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create
 
 O en Linux y macOS: `openssl rand -base64 48`.
 
+## Documentación de la API
+
+Con la API arrancada, la documentación interactiva está en <http://localhost:8080/swagger-ui> y el
+JSON de OpenAPI en <http://localhost:8080/v3/api-docs>. Se genera desde el código con springdoc y
+solo muestra las rutas de `/api/v1`; `OpenApiIT` comprueba que coincide con el contrato
+[docs/05-api/openapi-fase-1.yaml](../docs/05-api/openapi-fase-1.yaml).
+
+Para probar una ruta con candado: `POST /api/v1/auth/login` con el administrador del `.env`,
+copiar en **Authorize** solo el valor de `accessToken` (el texto que empieza por `eyJ`, sin
+comillas ni llaves; Swagger ya añade `Bearer`) y usar **Try it out** (el token dura 15 minutos). En `prod` no hay **Try it out**: solo se lee.
+
 ## Comandos
 
-En Windows se usa `.\mvnw.cmd` en lugar de `./mvnw`.
+En Windows se usa `.\mvnw.cmd` en lugar de `./mvnw`, y en PowerShell los argumentos `-D` van entre comillas (`.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"`): sin ellas PowerShell los corta por el punto.
 
 | Comando | Qué hace |
 | --- | --- |

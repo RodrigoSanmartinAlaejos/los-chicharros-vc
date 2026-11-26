@@ -12,3 +12,8 @@ spring:
 logging:
   level:
     root: warn
+
+# Swagger solo de lectura en producción: se ve la documentación, pero sin botón «Try it out»
+springdoc:
+  swagger-ui:
+    supported-submit-methods: []

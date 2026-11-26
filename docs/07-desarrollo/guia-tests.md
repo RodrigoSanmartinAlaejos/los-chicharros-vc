@@ -1,6 +1,6 @@
 # Guía de tests
 
-Última revisión: 2026-11-22.
+Última revisión: 2026-11-26.
 
 Esta guía explica cómo se escribe, dónde vive y cómo se ejecuta cada tipo de test del proyecto. Las [pautas](../00-plan/pautas-proyecto.md) dicen qué tests exige la Definition of Done, y las [reglas técnicas](reglas-tecnicas.md) fijan los nombres y los entornos. La [matriz de permisos](../02-requisitos/matriz-permisos.md) es la fuente de los tests de seguridad.
 
@@ -452,7 +452,7 @@ Las peticiones van al frontend, como las de un visitante real: las de la API pas
 
 | Cambio | Tests que lleva el PR |
 | --- | --- |
-| Endpoint nuevo | IT del caso correcto y de la validación (400), y sus filas en el `SecurityIT` |
+| Endpoint nuevo | IT del caso correcto y de la validación (400), y sus filas en el `SecurityIT`; `OpenApiIT` comprueba sin tocarlo que su `@Operation` coincide con el contrato |
 | Regla de negocio en un servicio | Unitarios de cada caso, parametrizados si se parecen |
 | Migración | La suite de integración ya la aplica; IT de repositorio si hay una consulta propia |
 | Cambio de permisos | Matriz de permisos y `SecurityIT` en el mismo PR |

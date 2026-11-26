@@ -1,8 +1,8 @@
 # API REST
 
-Última revisión: 2026-11-22.
+Última revisión: 2026-11-26.
 
-Convenciones de la API y contrato de la fase 1. Es el entregable del paso 9 de la planificación. El contrato completo, con cada ruta, sus parámetros, sus DTOs y sus errores, está en [`openapi-fase-1.yaml`](openapi-fase-1.yaml) (OpenAPI 3.1). Se puede abrir en [Swagger Editor](https://editor.swagger.io) pegando el fichero, o con la extensión *OpenAPI (Swagger) Editor* de VS Code. Cuando exista el backend, springdoc genera la misma documentación en `/swagger-ui` a partir del código.
+Convenciones de la API y contrato de la fase 1. Es el entregable del paso 9 de la planificación. El contrato completo, con cada ruta, sus parámetros, sus DTOs y sus errores, está en [`openapi-fase-1.yaml`](openapi-fase-1.yaml) (OpenAPI 3.1). Se puede abrir en [Swagger Editor](https://editor.swagger.io) pegando el fichero, o con la extensión *OpenAPI (Swagger) Editor* de VS Code. Desde el #90 (T08), la API genera la misma documentación a partir del código con springdoc, en `/swagger-ui` (JSON en `/v3/api-docs`), con solo las rutas que ya existen; `OpenApiIT` comprueba que coinciden con este contrato en etiquetas, resúmenes, seguridad y códigos de respuesta. En `prod` es solo de lectura.
 
 ## Convenciones
 
