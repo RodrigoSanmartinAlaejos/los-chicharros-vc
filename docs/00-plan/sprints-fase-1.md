@@ -1,6 +1,6 @@
 # Plan de sprints de la fase 1
 
-Última revisión: 2026-11-24.
+Última revisión: 2026-11-26.
 
 Cómo se reparte el trabajo de la fase 1 (MVP público) en sprints de dos semanas, sin fechas. Es el entregable del paso 12 de la planificación y cierra la fase 0. Las historias están en [historias de la fase 1](../02-requisitos/historias-fase-1.md); las tareas técnicas, que no son historias, se crean como issues con la plantilla de tarea técnica.
 
@@ -8,7 +8,7 @@ Cómo se reparte el trabajo de la fase 1 (MVP público) en sprints de dos semana
 
 - Dedicación: de 5 a 10 horas por semana, es decir, de 10 a 20 horas por sprint.
 - Estimación inicial: **1 punto ≈ 1,5 horas**, así que caben **de 7 a 13 puntos por sprint**; el plan apunta a la parte alta y se recorta si no da tiempo.
-- **Desde el cierre del sprint 2 se planifica por velocidad**: cada sprint lleva como mucho los puntos terminados en el anterior (ahora 13: los sprints 0, 1 y 2 terminaron completos con 8, 13 y 13 puntos). La equivalencia de 1,5 horas por punto queda solo como referencia para el trabajo sin ayuda: el sprint 2 se hizo en unas 1,5 horas de reloj, así que convertir puntos en horas no sirve para planificar. Si un sprint no termina sus puntos, el siguiente lleva menos.
+- **Desde el cierre del sprint 2 se planifica por velocidad**: cada sprint lleva como mucho los puntos terminados en el anterior (ahora 13: los sprints 0, 1, 2 y 3 terminaron completos con 8, 13, 13 y 12 puntos). Un sprint que termina todo lo planificado no baja la velocidad aunque llevara menos puntos: el sprint 3 llevaba 12 porque no cabía otra historia sin pasar de 13. La equivalencia de 1,5 horas por punto queda solo como referencia para el trabajo sin ayuda: el sprint 2 se hizo en unas 1,5 horas de reloj, así que convertir puntos en horas no sirve para planificar. Si un sprint no termina sus puntos, el siguiente lleva menos.
 - Total de la fase: 21 historias y 15 tareas técnicas, **124 puntos** en 11 sprints.
 
 ## Sprints
@@ -77,6 +77,21 @@ Terminado el 2026-11-24 con 13 de 13 puntos; objetivo cumplido.
   - Cada variable nueva se documenta en `.env.example` con sus mínimos y se valida al arrancar con un mensaje que diga si falta o si no cumple el mínimo: un `ADMIN_PASSWORD` de menos de 12 caracteres en el `.env` paró la API al probarla en local.
   - No repetir un bloque de comandos ya ejecutado aunque no se haya pegado la salida: crea issues y ramas duplicados (pasó con el #114). Antes de repetirlo, comprobar con `git log --oneline -1` y `gh pr list`.
 
+### Sprint 3: personas y equipos
+
+Terminado el 2026-11-26 con 12 de 12 puntos; objetivo cumplido.
+
+- **Demo:** `/gestion/equipos` con los 68 equipos de la semilla filtrados por temporada y categoría; la plantilla de Cadete femenina muestra dorsal, jugadora («Lucía R.», como se verá en la web pública) y posición, rechaza un dorsal ocupado con 409 y acepta el 99. `/gestion/personas` busca sin distinguir mayúsculas ni tildes y pagina las 124 personas, también en móvil. Tras 5 contraseñas malas, el login de ese email desde esa IP queda bloqueado 15 minutos con el mismo mensaje genérico; con más de 20 peticiones por minuto a `/auth/**` la API responde 429 y el login avisa «Demasiados intentos». Swagger (`/swagger-ui`) documenta toda la API y `OpenApiIT` comprueba que coincide con el contrato.
+
+  <img src="../assets/demos/sprint-3-plantilla-escritorio.png" width="640" alt="Demo del sprint 3: plantilla de un equipo en el panel en escritorio">
+  <img src="../assets/demos/sprint-3-personas-movil.png" width="200" alt="Demo del sprint 3: listado de personas del panel en móvil">
+  <img src="../assets/demos/sprint-3-login-limite-escritorio.png" width="640" alt="Demo del sprint 3: aviso de demasiados intentos en la página de login">
+
+- **Qué mejorar:**
+  - Probar las anotaciones de Hibernate con datos que cambian con el tiempo: `@SQLRestriction` en `Person` quitaba a las personas borradas también de las plantillas de temporadas pasadas; lo detectó `TeamControllerIT` y se sustituyó por filtros explícitos en el repositorio (regla 18 de Java).
+  - En las pruebas a mano de un límite de peticiones, tener en cuenta cómo se recarga: con `refillGreedy` el cubo recupera un permiso cada 3 segundos, así que unas peticiones espaciadas no lo agotan y pareció que el 429 no saltaba. Se comprueba con ráfagas o mirando las respuestas, no solo la pantalla.
+  - El bloqueo por IP depende de que la API sepa la IP real del usuario: antes del despliegue (sprint 9) hay que decidir cómo se fía del `X-Forwarded-For` del SSR en Render; si no, todos los usuarios comparten la IP del SSR y el límite.
+
 ## Tareas técnicas
 
 | Id | Tarea | Puntos | Sprint |
@@ -99,7 +114,7 @@ Terminado el 2026-11-24 con 13 de 13 puntos; objetivo cumplido.
 
 ## Decisiones
 
-- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos. Al cerrar el sprint 2 (decidido el 2026-11-24) se deja de recalibrar en horas y **se planifica por velocidad** (puntos terminados por sprint, ahora 13); las horas por punto quedan solo como referencia.
+- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos. Al cerrar el sprint 2 (decidido el 2026-11-24) se deja de recalibrar en horas y **se planifica por velocidad** (puntos terminados por sprint, ahora 13); las horas por punto quedan solo como referencia. Al cerrar el sprint 3 (decidido el 2026-11-26) la velocidad sigue en 13: un sprint que termina todo lo planificado no la baja aunque llevara menos puntos.
 - **Sprint 0** para cerrar la fase 0 con las herramientas de calidad (Spotless, Checkstyle, Husky, JaCoCo) y los datos de ejemplo antes de escribir código de negocio.
 - **Sprint y puntos como campos del tablero**, no como etiquetas: un campo de selección «Sprint» y un campo numérico «Puntos».
 - **El despliegue va al final**, en los sprints 9 y 10; hasta entonces la demo de cada sprint se hace en local. El sprint 10 es corto a propósito, para dejar margen a los arreglos de la release.
