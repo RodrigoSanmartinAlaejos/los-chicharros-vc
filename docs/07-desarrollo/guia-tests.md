@@ -468,7 +468,7 @@ Cada punto es un issue propio:
 - [x] JaCoCo en el `pom.xml`, con el informe en la CI (#85)
 - [x] `AbstractIntegrationTest`, `DatabaseCleaner` y las implementaciones de prueba de `EmailSender` e `ImageStorage` (#87)
 - [x] `AuthTokens`, con el login (#53)
-- [ ] Workflows de la CI: `backend-build`, `backend-test`, `frontend-lint`, `frontend-test` y, para releases, `e2e`
-- [ ] Playwright: dependencia, `playwright.config.ts`, proyecto de *setup* y `login.spec.ts`
-- [ ] `scripts/smoke.sh` y `.github/workflows/smoke.yml`
-- [ ] `perf/public-read.js` (al cerrar la fase 1, junto con `staging`)
+- [x] Workflows de la CI: `backend-build`, `backend-test`, `frontend-lint` y `frontend-test` (#12)
+- [ ] Playwright: dependencia, `playwright.config.ts`, proyecto de *setup*, los E2E de la fase 1 y el job `e2e` en el PR de release (#93)
+- [ ] `scripts/smoke.sh` y `.github/workflows/smoke.yml` (#92)
+- [ ] `perf/public-read.js`, cuando exista `staging` (#125, fase 2)
