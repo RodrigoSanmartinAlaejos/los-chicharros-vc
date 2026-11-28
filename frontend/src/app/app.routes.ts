@@ -33,6 +33,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/people/people').then((m) => m.People),
       },
       {
+        path: 'competiciones',
+        title: 'Competiciones',
+        loadComponent: () =>
+          import('./features/admin/competitions/competitions').then((m) => m.Competitions),
+      },
+      {
         path: 'configuracion',
         title: 'Configuración',
         loadComponent: () =>

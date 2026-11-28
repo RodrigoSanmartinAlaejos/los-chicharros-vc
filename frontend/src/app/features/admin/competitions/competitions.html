@@ -1,0 +1,233 @@
+<h1>Competiciones</h1>
+<p class="intro">
+  Las ligas de cada temporada y categoría, con sus jornadas. Después podrás poner los partidos en
+  cada jornada y la clasificación de cada liga.
+</p>
+
+<section aria-labelledby="competitions-title">
+  <h2 id="competitions-title" class="visually-hidden">Listado de competiciones</h2>
+  <div class="panel__header">
+    <div class="filters">
+      <div class="field">
+        <label for="competitions-season">Temporada</label>
+        <select id="competitions-season" [formControl]="seasonFilter">
+          @for (season of seasons(); track season.id) {
+            <option [ngValue]="season.id">
+              {{ season.name }}{{ season.active ? ' (activa)' : '' }}
+            </option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="competitions-category">Categoría</label>
+        <select id="competitions-category" [formControl]="categoryFilter">
+          <option [ngValue]="null">Todas</option>
+          @for (category of categories(); track category.id) {
+            <option [ngValue]="category.id">{{ categoryName(category) }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    @if (!formOpen() && seasons().length > 0) {
+      <button type="button" class="button button--primary" (click)="startCreate()">
+        + Nueva competición
+      </button>
+    }
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  @if (formOpen()) {
+    <form class="form form--top" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <h3>{{ editingId() === null ? 'Nueva competición' : 'Editar competición' }}</h3>
+      @if (formError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field field--wide">
+        <label for="competition-name">Nombre</label>
+        <input
+          id="competition-name"
+          formControlName="name"
+          maxlength="100"
+          autocomplete="off"
+          placeholder="Por ejemplo, Liga Insular Cadete femenina"
+          aria-describedby="competition-name-error"
+          [attr.aria-invalid]="errorOf('name') ? 'true' : null"
+        />
+        <p id="competition-name-error" class="field__error">{{ errorOf('name') }}</p>
+      </div>
+      <div class="field">
+        <label for="competition-season">Temporada</label>
+        <select
+          id="competition-season"
+          formControlName="seasonId"
+          aria-describedby="competition-season-error"
+          [attr.aria-invalid]="errorOf('seasonId') ? 'true' : null"
+        >
+          @for (season of seasons(); track season.id) {
+            <option [ngValue]="season.id">{{ season.name }}</option>
+          }
+        </select>
+        <p id="competition-season-error" class="field__error">{{ errorOf('seasonId') }}</p>
+      </div>
+      <div class="field">
+        <label for="competition-category">Categoría</label>
+        <select
+          id="competition-category"
+          formControlName="categoryId"
+          aria-describedby="competition-category-error"
+          [attr.aria-invalid]="errorOf('categoryId') ? 'true' : null"
+        >
+          @for (category of categories(); track category.id) {
+            <option [ngValue]="category.id">{{ categoryName(category) }}</option>
+          }
+        </select>
+        <p id="competition-category-error" class="field__error">{{ errorOf('categoryId') }}</p>
+      </div>
+      <div class="field">
+        <label for="competition-federation">Federación (opcional)</label>
+        <input
+          id="competition-federation"
+          formControlName="federation"
+          maxlength="100"
+          autocomplete="off"
+          aria-describedby="competition-federation-error"
+          [attr.aria-invalid]="errorOf('federation') ? 'true' : null"
+        />
+        <p id="competition-federation-error" class="field__error">{{ errorOf('federation') }}</p>
+      </div>
+      <div class="field">
+        <label for="competition-penalty">Puntos de sanción</label>
+        <input
+          id="competition-penalty"
+          type="number"
+          min="0"
+          max="10"
+          formControlName="forfeitPenaltyPoints"
+          aria-describedby="competition-penalty-hint competition-penalty-error"
+          [attr.aria-invalid]="errorOf('forfeitPenaltyPoints') ? 'true' : null"
+        />
+        <span id="competition-penalty-hint" class="field__hint"
+          >Se restan al equipo que no se presenta a un partido.</span
+        >
+        <p id="competition-penalty-error" class="field__error">
+          {{ errorOf('forfeitPenaltyPoints') }}
+        </p>
+      </div>
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" class="button" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  }
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando competiciones…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las competiciones.
+          <button type="button" class="link-button" (click)="load()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (seasons().length === 0) {
+          <p class="state">
+            Antes de crear competiciones, da de alta una temporada en Configuración.
+          </p>
+        } @else if (competitions().length === 0) {
+          <p class="state">No hay competiciones con estos filtros.</p>
+        } @else {
+          <table class="panel__table">
+            <thead>
+              <tr>
+                <th scope="col">Competición</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Sanción</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (competition of competitions(); track competition.id) {
+                <tr [class.selected]="selected()?.id === competition.id">
+                  <td data-label="Competición">
+                    <!-- Un solo bloque: en móvil la celda es flex y separaría nombre y federación -->
+                    <span class="competition">
+                      <strong>{{ competition.name }}</strong>
+                      @if (competition.federation) {
+                        <span class="federation">{{ competition.federation }}</span>
+                      }
+                    </span>
+                  </td>
+                  <td data-label="Categoría">{{ categoryLabel(competition.categoryId) }}</td>
+                  <td data-label="Sanción">
+                    {{ competition.forfeitPenaltyPoints }}
+                    {{ competition.forfeitPenaltyPoints === 1 ? 'punto' : 'puntos' }}
+                  </td>
+                  <td>
+                    @if (confirmingId() === competition.id) {
+                      <div
+                        class="confirm"
+                        role="group"
+                        [attr.aria-label]="'Borrar ' + competition.name"
+                      >
+                        <span>¿Borrar {{ competition.name }} y sus jornadas?</span>
+                        <button
+                          type="button"
+                          class="button button--danger"
+                          (click)="confirmDelete(competition)"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button type="button" class="button" (click)="confirmingId.set(null)">
+                          Cancelar
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="panel__actions">
+                        <button
+                          type="button"
+                          class="link-button"
+                          [attr.aria-expanded]="selected()?.id === competition.id"
+                          (click)="showMatchdays(competition)"
+                        >
+                          Jornadas<span class="visually-hidden"> de {{ competition.name }}</span>
+                        </button>
+                        <button type="button" class="link-button" (click)="startEdit(competition)">
+                          Editar<span class="visually-hidden"> {{ competition.name }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="link-button link-button--danger"
+                          (click)="askDelete(competition)"
+                        >
+                          Borrar<span class="visually-hidden"> {{ competition.name }}</span>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    }
+  </div>
+</section>
+
+@if (selected(); as competition) {
+  <cv-matchdays
+    [competitionId]="competition.id"
+    [title]="competition.name + ' · ' + seasonName(competition.seasonId)"
+    [season]="selectedSeason()"
+    (closed)="selected.set(null)"
+  />
+}

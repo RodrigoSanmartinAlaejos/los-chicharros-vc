@@ -1,0 +1,31 @@
+// Lo propio de las jornadas: alta seguida y edición en la fila. El resto, en
+// shared/admin/crud-panel.scss.
+
+.matchdays {
+  margin-top: var(--space-7);
+  scroll-margin-top: var(--space-4);
+}
+
+#matchdays-title {
+  scroll-margin-top: var(--space-4);
+}
+
+.form--top {
+  margin: 0 0 var(--space-4);
+}
+
+.number {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+
+  .field input {
+    width: 10rem;
+  }
+}

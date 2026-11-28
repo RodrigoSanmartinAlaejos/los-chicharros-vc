@@ -28,5 +28,6 @@ export const LEGAL_NAV: readonly NavItem[] = [
 export const ADMIN_NAV: readonly NavItem[] = [
   { path: '/gestion/equipos', label: 'Equipos' },
   { path: '/gestion/personas', label: 'Personas' },
+  { path: '/gestion/competiciones', label: 'Competiciones' },
   { path: '/gestion/configuracion', label: 'Configuración' },
 ];

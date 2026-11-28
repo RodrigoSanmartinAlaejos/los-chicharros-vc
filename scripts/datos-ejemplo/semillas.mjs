@@ -128,3 +128,37 @@ writeSeed(
   ],
   [...teams, ...memberships],
 );
+
+// ---------- competitions y matchdays (H18) ----------
+// La competición se reconoce por temporada, categoría y nombre (clave única); la jornada, por su
+// competición y su número.
+const competitionRows = readCsv('competitions.csv');
+const competitionByCode = Object.fromEntries(competitionRows.map((c) => [c.code, c]));
+const competitionWhere = (c) =>
+  `c.season_id = ${seasonId(c.season)} AND c.category_id = ${categoryId(c.category)}` +
+  ` AND c.name = ${text(c.name)}`;
+const competitions = competitionRows.map(
+  (c) =>
+    'INSERT IGNORE INTO competitions (season_id, category_id, name, federation,' +
+    ' forfeit_penalty_points, created_at, updated_at)\n' +
+    `  SELECT ${seasonId(c.season)}, ${categoryId(c.category)}, ${text(c.name)},` +
+    ` ${text(c.federation)}, ${c.forfeit_penalty_points}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6);`,
+);
+const matchdays = readCsv('matchdays.csv').map((m) => {
+  const c = competitionByCode[m.competition];
+  return (
+    'INSERT IGNORE INTO matchdays (competition_id, number, scheduled_date, created_at,' +
+    ' updated_at)\n' +
+    `  SELECT c.id, ${m.number}, ${text(m.scheduled_date)}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)` +
+    ` FROM competitions c WHERE ${competitionWhere(c)};`
+  );
+});
+writeSeed(
+  'R__seed_04_competitions.sql',
+  [
+    'Semilla de dev y staging: competiciones y jornadas de competitions.csv y matchdays.csv',
+    '(docs/04-datos/datos-ejemplo/). No se edita a mano: la escribe scripts/datos-ejemplo/semillas.mjs.',
+    'Es repetible e idempotente: INSERT IGNORE sobre las claves únicas de las competiciones y las jornadas.',
+  ],
+  [...competitions, ...matchdays],
+);

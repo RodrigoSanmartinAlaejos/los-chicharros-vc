@@ -1,6 +1,6 @@
 # Diccionario de datos de la fase 1
 
-Última revisión: 2026-11-26.
+Última revisión: 2026-11-28.
 
 Cada tabla y columna de la fase 1, con su tipo, si admite nulos y sus reglas. Es la base de las migraciones Flyway: si una migración cambia algo de aquí, el diccionario se actualiza en el mismo PR. El diagrama está en el [modelo entidad-relación](modelo-er.md) y las convenciones de nombres en las [reglas técnicas](../07-desarrollo/reglas-tecnicas.md).
 
@@ -96,15 +96,17 @@ Al borrar una persona (borrado lógico), sale de las plantillas de las temporada
 | `category_id` | `BIGINT UNSIGNED` | No | FK `categories` | Categoría |
 | `name` | `VARCHAR(100)` | No | | Nombre de la liga |
 | `federation` | `VARCHAR(100)` | Sí | | Federación que la organiza |
-| `forfeit_penalty_points` | `TINYINT UNSIGNED` | No | Por defecto 1 | Puntos que se restan por incomparecencia |
+| `forfeit_penalty_points` | `TINYINT UNSIGNED` | No | Por defecto 1; `ck_competitions_forfeit_penalty`: 10 como máximo | Puntos que se restan por incomparecencia |
+
+Único: (`season_id`, `category_id`, `name`) en `uk_competitions_season_category_name` (desde el #62). Al borrar una competición se borran sus jornadas y su clasificación; si alguna jornada tiene partidos, no se puede borrar.
 
 ## `matchdays` (jornadas)
 
 | Columna | Tipo | Nulo | Reglas | Significado |
 | --- | --- | --- | --- | --- |
 | `competition_id` | `BIGINT UNSIGNED` | No | FK `competitions`, `ON DELETE CASCADE` | Competición |
-| `number` | `SMALLINT UNSIGNED` | No | Mayor que 0 | Número de jornada |
-| `scheduled_date` | `DATE` | Sí | | Fecha prevista |
+| `number` | `SMALLINT UNSIGNED` | No | `ck_matchdays_number`: de 1 a 99 | Número de jornada |
+| `scheduled_date` | `DATE` | Sí | Dentro de la temporada de la competición (lo comprueba la API) | Fecha prevista |
 
 Único: (`competition_id`, `number`) en `uk_matchdays_competition_number`.
 
@@ -202,7 +204,7 @@ Cada tabla en su migración, en este orden para respetar las claves foráneas:
 
 `people` va antes que `teams` porque su historia (H16) se hizo antes; ninguna de las dos depende de la otra, y `team_memberships` apunta a las dos.
 
-Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones.
+Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql`).
 
 ## Decisiones
 
