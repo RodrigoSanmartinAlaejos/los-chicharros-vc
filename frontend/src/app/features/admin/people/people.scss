@@ -37,3 +37,17 @@
   margin-top: var(--space-3);
   font-size: var(--font-size-small);
 }
+
+// Foto pequeña junto al nombre, si la tiene (H14)
+.person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+}

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
@@ -76,6 +77,21 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             .toList();
     return handleExceptionInternal(
         ex, validationProblem(violations), headers, HttpStatus.BAD_REQUEST, request);
+  }
+
+  /**
+   * Una imagen de más de 5 MB ({@code spring.servlet.multipart}): 413 con el mensaje en español.
+   */
+  @Override
+  protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
+      MaxUploadSizeExceededException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.PAYLOAD_TOO_LARGE, "La imagen pesa más de 5 MB: elige una más pequeña");
+    return handleExceptionInternal(ex, problem, headers, HttpStatus.PAYLOAD_TOO_LARGE, request);
   }
 
   /** Validación de parámetros en los servicios ({@code @Validated}). */

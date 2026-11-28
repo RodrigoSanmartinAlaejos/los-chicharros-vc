@@ -1,0 +1,63 @@
+// Campo de imagen del panel (wireframe 09): la imagen actual y una zona para elegir o arrastrar
+// otra. Los colores son los de los campos de formulario (src/styles/_controls.scss).
+
+.picker {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.picker__label {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+}
+
+.picker__body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.picker__preview {
+  width: 8rem;
+  height: 6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-muted);
+  object-fit: contain;
+}
+
+.picker__drop {
+  display: grid;
+  flex: 1 1 14rem;
+  place-content: center;
+  gap: var(--space-1);
+  min-height: 6rem;
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-muted);
+  color: var(--color-text);
+  text-align: center;
+  cursor: pointer;
+
+  &:focus-within {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    border-style: solid;
+    border-color: var(--color-primary);
+  }
+
+  &--busy {
+    cursor: progress;
+    opacity: 0.7;
+  }
+}
+
+.picker__hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+}

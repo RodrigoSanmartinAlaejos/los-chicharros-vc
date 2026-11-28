@@ -13,3 +13,9 @@ spring:
 logging:
   level:
     root: info
+
+# Imágenes en Cloudinary: el disco de Render se borra en cada despliegue
+app:
+  images:
+    storage: ${IMAGE_STORAGE:cloudinary}
+    cloudinary-folder: los-chicharros/staging

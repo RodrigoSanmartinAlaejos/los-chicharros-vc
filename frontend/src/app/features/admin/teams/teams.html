@@ -95,6 +95,18 @@
           >Sin marcar, es un rival: no sale en la página de equipos de la web.</span
         >
       </div>
+      @if (editingId() !== null) {
+        <div class="field--wide">
+          <cv-image-picker
+            label="Escudo o foto del equipo"
+            [alt]="'Escudo actual de ' + form.controls.name.value"
+            [imageUrl]="crestUrl()"
+            [uploading]="uploadingCrest()"
+            [error]="crestError()"
+            (picked)="uploadCrest($event)"
+          />
+        </div>
+      }
       <div class="form__buttons">
         <button type="submit" class="button button--primary" [disabled]="saving()">
           {{ saving() ? 'Guardando…' : 'Guardar' }}
@@ -137,7 +149,12 @@
               @for (team of teams(); track team.id) {
                 <tr [class.selected]="selected()?.id === team.id">
                   <td data-label="Equipo">
-                    <strong>{{ team.name }}</strong>
+                    <span class="team">
+                      @if (team.crestUrl) {
+                        <img class="crest" [src]="team.crestUrl" alt="" />
+                      }
+                      <strong>{{ team.name }}</strong>
+                    </span>
                   </td>
                   <td data-label="Categoría">{{ categoryLabel(team.category) }}</td>
                   <td data-label="Tipo">

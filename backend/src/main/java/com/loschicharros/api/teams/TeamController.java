@@ -1,6 +1,7 @@
 package com.loschicharros.api.teams;
 
 import com.loschicharros.api.security.Roles;
+import com.loschicharros.api.storage.ImageUpload;
 import com.loschicharros.api.teams.dto.MembershipPatchRequest;
 import com.loschicharros.api.teams.dto.MembershipRequest;
 import com.loschicharros.api.teams.dto.MembershipResponse;
@@ -8,10 +9,12 @@ import com.loschicharros.api.teams.dto.TeamRequest;
 import com.loschicharros.api.teams.dto.TeamResponse;
 import com.loschicharros.api.teams.dto.TeamSummary;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +26,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
@@ -143,5 +148,23 @@ class TeamController {
   ResponseEntity<Void> removeFromRoster(@PathVariable Long id, @PathVariable Long membershipId) {
     roster.remove(id, membershipId);
     return ResponseEntity.noContent().build();
+  }
+
+  // Subir una imagen no sigue la tabla de la convención: 413 si pasa de 5 MB, nunca 409
+  @PreAuthorize(Roles.ONLY_ADMIN)
+  @Operation(summary = "Subir el escudo o la foto de un equipo")
+  @ApiResponse(responseCode = "200", description = "OK")
+  @ApiResponse(responseCode = "400", ref = "#/components/responses/BadRequest")
+  @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized")
+  @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+  @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFound")
+  @ApiResponse(responseCode = "413", ref = "#/components/responses/PayloadTooLarge")
+  @PutMapping(value = "/{id}/crest", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  TeamResponse upload(
+      @PathVariable Long id,
+      @Parameter(description = "JPG, PNG o WebP de 5 MB como máximo")
+          @RequestPart(name = ImageUpload.FIELD, required = false)
+          MultipartFile file) {
+    return teams.replaceCrest(id, ImageUpload.of(file));
   }
 }

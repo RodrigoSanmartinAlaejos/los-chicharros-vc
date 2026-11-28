@@ -146,6 +146,32 @@ describe('People', () => {
     expect(page.querySelector('tbody tr')?.textContent).toContain('Lucas Pérez');
   });
 
+  it('sube la foto de una persona al editarla y la muestra en la lista', async () => {
+    const { fixture, page } = await render();
+    expectSearch(null, 0).flush(pageOf([LUCIA]));
+    await fixture.whenStable();
+    expect(page.querySelector('.avatar')).toBeNull();
+
+    button(page, 'Editar a Lucía Marrero Cabrera').click();
+    await fixture.whenStable();
+    const input = page.querySelector('form input[type=file]') as HTMLInputElement;
+    const file = new File(['jpg'], 'lucia.jpg', { type: 'image/jpeg' });
+    Object.defineProperty(input, 'files', { value: [file] });
+    input.dispatchEvent(new Event('change'));
+
+    const upload = http.expectOne({ method: 'PUT', url: `${URL}/1/photo` });
+    expect((upload.request.body as FormData).get('file')).toBe(file);
+    const withPhoto = { ...LUCIA, photoUrl: '/api/images/people/x-persona-1.jpg' };
+    upload.flush(withPhoto);
+    expectSearch(null, 0).flush(pageOf([withPhoto]));
+    await fixture.whenStable();
+
+    expect(page.querySelector('form .picker__preview')?.getAttribute('src')).toBe(
+      withPhoto.photoUrl,
+    );
+    expect(page.querySelector('tbody .avatar')?.getAttribute('src')).toBe(withPhoto.photoUrl);
+  });
+
   it('no deja guardar una fecha de nacimiento futura', async () => {
     const { fixture, page } = await render();
     expectSearch(null, 0).flush(pageOf([]));

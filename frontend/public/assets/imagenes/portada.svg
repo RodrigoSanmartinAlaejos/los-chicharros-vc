@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-labelledby="t">
+  <title id="t">Ilustración de portada: balón de voleibol sobre la red, con el mar de Santa Cruz al fondo</title>
+  <rect width="1600" height="900" fill="#12394A"/>
+  <circle cx="1270" cy="230" r="120" fill="#C9A66B" opacity="0.9"/>
+  <path d="M0 640 C200 600 360 680 560 640 S960 600 1160 640 S1480 680 1600 640 V900 H0 Z" fill="#0A2531"/>
+  <path d="M0 700 C220 665 380 735 600 700 S1000 665 1220 700 S1500 735 1600 700" fill="none" stroke="#F5F1E8" stroke-opacity="0.5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M0 770 C220 735 380 805 600 770 S1000 735 1220 770 S1500 805 1600 770" fill="none" stroke="#F5F1E8" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round"/>
+  <path d="M0 830 H1600 V900 H0 Z" fill="#F5F1E8"/>
+  <g stroke="#F5F1E8" stroke-opacity="0.55">
+    <rect x="160" y="420" width="1280" height="110" fill="none" stroke-width="4"/>
+    <g stroke-width="2">
+      <line x1="200" y1="420" x2="200" y2="530"/>
+      <line x1="240" y1="420" x2="240" y2="530"/>
+      <line x1="280" y1="420" x2="280" y2="530"/>
+      <line x1="320" y1="420" x2="320" y2="530"/>
+      <line x1="360" y1="420" x2="360" y2="530"/>
+      <line x1="400" y1="420" x2="400" y2="530"/>
+      <line x1="440" y1="420" x2="440" y2="530"/>
+      <line x1="480" y1="420" x2="480" y2="530"/>
+      <line x1="520" y1="420" x2="520" y2="530"/>
+      <line x1="560" y1="420" x2="560" y2="530"/>
+      <line x1="600" y1="420" x2="600" y2="530"/>
+      <line x1="640" y1="420" x2="640" y2="530"/>
+      <line x1="680" y1="420" x2="680" y2="530"/>
+      <line x1="720" y1="420" x2="720" y2="530"/>
+      <line x1="760" y1="420" x2="760" y2="530"/>
+      <line x1="800" y1="420" x2="800" y2="530"/>
+      <line x1="840" y1="420" x2="840" y2="530"/>
+      <line x1="880" y1="420" x2="880" y2="530"/>
+      <line x1="920" y1="420" x2="920" y2="530"/>
+      <line x1="960" y1="420" x2="960" y2="530"/>
+      <line x1="1000" y1="420" x2="1000" y2="530"/>
+      <line x1="1040" y1="420" x2="1040" y2="530"/>
+      <line x1="1080" y1="420" x2="1080" y2="530"/>
+      <line x1="1120" y1="420" x2="1120" y2="530"/>
+      <line x1="1160" y1="420" x2="1160" y2="530"/>
+      <line x1="1200" y1="420" x2="1200" y2="530"/>
+      <line x1="1240" y1="420" x2="1240" y2="530"/>
+      <line x1="1280" y1="420" x2="1280" y2="530"/>
+      <line x1="1320" y1="420" x2="1320" y2="530"/>
+      <line x1="1360" y1="420" x2="1360" y2="530"/>
+      <line x1="1400" y1="420" x2="1400" y2="530"/>
+      <line x1="160" y1="447" x2="1440" y2="447"/>
+      <line x1="160" y1="474" x2="1440" y2="474"/>
+      <line x1="160" y1="501" x2="1440" y2="501"/>
+    </g>
+  </g>
+  <rect x="160" y="414" width="1280" height="14" fill="#F5F1E8"/>
+  <rect x="146" y="400" width="14" height="430" fill="#C9A66B"/>
+  <rect x="1440" y="400" width="14" height="430" fill="#C9A66B"/>
+  <g transform="translate(800 290) scale(1.1)"><circle r="100" fill="#F5F1E8" stroke="#C9A66B" stroke-width="8"/><g fill="none" stroke="#12394A" stroke-width="9" stroke-linecap="round"><g id="p"><path d="M0 0 C0 -43 -33 -73 -80 -60"/><path d="M30 -17 C37 -57 3 -87 -47 -93"/></g><use href="#p" transform="rotate(120)"/><use href="#p" transform="rotate(240)"/></g></g>
+  <path d="M610 240 C650 220 690 220 710 230" fill="none" stroke="#C9A66B" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  <path d="M585 290 C625 275 665 275 680 282" fill="none" stroke="#C9A66B" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+</svg>

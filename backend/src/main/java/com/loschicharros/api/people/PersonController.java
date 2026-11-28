@@ -4,13 +4,16 @@ import com.loschicharros.api.common.web.PageResponse;
 import com.loschicharros.api.people.dto.PersonRequest;
 import com.loschicharros.api.people.dto.PersonResponse;
 import com.loschicharros.api.security.Roles;
+import com.loschicharros.api.storage.ImageUpload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +24,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
@@ -88,5 +93,25 @@ class PersonController {
   ResponseEntity<Void> delete(@PathVariable Long id) {
     service.delete(id);
     return ResponseEntity.noContent().build();
+  }
+
+  // Subir una imagen no sigue la tabla de la convención: 413 si pasa de 5 MB, nunca 409
+  @PreAuthorize(Roles.ONLY_ADMIN)
+  @Operation(
+      summary = "Subir la foto de una persona",
+      description = "Solo se muestra en la web pública si tiene consentimiento de imagen.")
+  @ApiResponse(responseCode = "200", description = "OK")
+  @ApiResponse(responseCode = "400", ref = "#/components/responses/BadRequest")
+  @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized")
+  @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+  @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFound")
+  @ApiResponse(responseCode = "413", ref = "#/components/responses/PayloadTooLarge")
+  @PutMapping(value = "/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  PersonResponse upload(
+      @PathVariable Long id,
+      @Parameter(description = "JPG, PNG o WebP de 5 MB como máximo")
+          @RequestPart(name = ImageUpload.FIELD, required = false)
+          MultipartFile file) {
+    return service.replacePhoto(id, ImageUpload.of(file));
   }
 }

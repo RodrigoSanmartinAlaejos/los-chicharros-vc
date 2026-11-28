@@ -56,6 +56,11 @@ public class Person extends Auditable {
     this.imageConsent = imageConsent;
   }
 
+  /** La foto, ya guardada (H14). La web pública solo la muestra con consentimiento de imagen. */
+  public void changePhoto(String photoUrl) {
+    this.photoUrl = photoUrl;
+  }
+
   /** Borrado lógico: desde ahora la persona no aparece en ninguna consulta. */
   public void markDeleted(Instant when) {
     this.deletedAt = when;

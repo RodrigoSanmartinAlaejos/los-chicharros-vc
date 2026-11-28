@@ -1,0 +1,36 @@
+<div class="picker">
+  <span class="picker__label" [id]="id + '-label'">{{ label() }}</span>
+  <div class="picker__body">
+    @if (imageUrl(); as url) {
+      <img class="picker__preview" [src]="url" [alt]="alt()" />
+    }
+    <label
+      class="picker__drop"
+      [class.picker__drop--active]="dragging()"
+      [class.picker__drop--busy]="uploading()"
+      (dragover)="dragOver($event)"
+      (dragleave)="dragging.set(false)"
+      (drop)="drop($event)"
+    >
+      <input
+        type="file"
+        class="visually-hidden"
+        accept="image/jpeg,image/png,image/webp"
+        [disabled]="uploading()"
+        [attr.aria-labelledby]="id + '-label ' + id + '-action'"
+        [attr.aria-describedby]="id + '-error'"
+        [attr.aria-invalid]="message() ? 'true' : null"
+        (change)="choose($event)"
+      />
+      <span [id]="id + '-action'">
+        @if (uploading()) {
+          Subiendo la imagen…
+        } @else {
+          {{ imageUrl() ? 'Cambiar' : 'Elegir' }} una imagen o arrastrarla aquí
+        }
+      </span>
+      <span class="picker__hint">JPG, PNG o WebP, 5 MB como máximo</span>
+    </label>
+  </div>
+  <p [id]="id + '-error'" class="field__error" role="alert">{{ message() }}</p>
+</div>

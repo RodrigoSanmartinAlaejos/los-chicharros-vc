@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { ImagePicker, imageUploadError } from '../../../shared/admin/image-picker/image-picker';
 import { applyProblem, errorMessage } from '../../../shared/admin/problem';
 import { ConfigurationApi } from '../configuration/configuration.api';
 import { CATEGORY_GENDER, Category, Season } from '../configuration/configuration.models';
@@ -21,7 +22,7 @@ import { TeamRequest, TeamSummary } from './teams.models';
  */
 @Component({
   selector: 'cv-teams',
-  imports: [ReactiveFormsModule, Roster],
+  imports: [ReactiveFormsModule, Roster, ImagePicker],
   templateUrl: './teams.html',
   styleUrls: ['../../../shared/admin/crud-panel.scss', './teams.scss'],
 })
@@ -40,6 +41,10 @@ export class Teams implements OnInit {
   protected readonly formOpen = signal(false);
   protected readonly editingId = signal<number | null>(null);
   protected readonly confirmingId = signal<number | null>(null);
+  /** Escudo del equipo que se edita (H14): se sube aparte, en cuanto se elige. */
+  protected readonly crestUrl = signal<string | null>(null);
+  protected readonly uploadingCrest = signal(false);
+  protected readonly crestError = signal<string | null>(null);
   protected readonly saving = signal(false);
   protected readonly formError = signal<string | null>(null);
   protected readonly listError = signal<string | null>(null);
@@ -109,6 +114,7 @@ export class Teams implements OnInit {
   }
 
   protected startEdit(team: TeamSummary): void {
+    this.crestUrl.set(team.crestUrl);
     this.openForm(team.id, {
       name: team.name,
       seasonId: team.seasonId,
@@ -155,6 +161,32 @@ export class Teams implements OnInit {
     });
   }
 
+  /** Sube el escudo sin tocar el formulario: lo que se esté escribiendo no se pierde. */
+  protected uploadCrest(file: File): void {
+    const id = this.editingId();
+    if (id === null) {
+      return;
+    }
+    this.uploadingCrest.set(true);
+    this.crestError.set(null);
+    this.api.uploadCrest(id, file).subscribe({
+      next: (saved) => {
+        this.uploadingCrest.set(false);
+        this.crestUrl.set(saved.crestUrl);
+        this.teams.update((teams) =>
+          teams.map((team) =>
+            team.id === saved.id ? { ...team, crestUrl: saved.crestUrl } : team,
+          ),
+        );
+        this.notice.set(`Se ha cambiado el escudo de ${saved.name}.`);
+      },
+      error: (error: unknown) => {
+        this.uploadingCrest.set(false);
+        this.crestError.set(imageUploadError(error));
+      },
+    });
+  }
+
   protected askDelete(team: TeamSummary): void {
     this.listError.set(null);
     this.confirmingId.set(team.id);
@@ -188,6 +220,7 @@ export class Teams implements OnInit {
   private openForm(id: number | null, value: object): void {
     this.form.reset(value);
     this.formError.set(null);
+    this.crestError.set(null);
     this.listError.set(null);
     this.confirmingId.set(null);
     this.editingId.set(id);

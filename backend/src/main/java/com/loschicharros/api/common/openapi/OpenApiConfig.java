@@ -59,7 +59,8 @@ class OpenApiConfig {
           "Forbidden", "Sin permiso para esta acción",
           "NotFound", "No existe",
           "Conflict", "Duplicado o con registros que dependen de él",
-          "TooManyRequests", "Demasiadas peticiones: más de 20 por minuto en `/auth/**`");
+          "TooManyRequests", "Demasiadas peticiones: más de 20 por minuto en `/auth/**`",
+          "PayloadTooLarge", "Fichero de más de 5 MB");
 
   @Bean
   OpenAPI openApi() {

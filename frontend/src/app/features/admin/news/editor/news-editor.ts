@@ -5,6 +5,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, switchMap } from 'rxjs';
 import { formatClubDateTime } from '../../../../shared/admin/club-time';
+import { ImagePicker, imageUploadError } from '../../../../shared/admin/image-picker/image-picker';
 import { applyProblem, errorMessage } from '../../../../shared/admin/problem';
 import { NewsApi } from '../news.api';
 import {
@@ -23,11 +24,12 @@ export const NEW_NEWS = 'nueva';
 /**
  * Editor de una noticia (H12, wireframe 09): título, resumen, tipo, destacada y cuerpo en Markdown.
  * Se guarda como borrador y se publica o se retira desde aquí; publicar guarda antes los cambios.
- * La vista previa y la copia del borrador en el navegador llegan con H13, y la imagen con H14.
+ * La imagen (H14) se sube aparte, en cuanto se elige, cuando la noticia ya está guardada. La vista
+ * previa y la copia del borrador en el navegador llegan con H13.
  */
 @Component({
   selector: 'cv-news-editor',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ImagePicker],
   templateUrl: './news-editor.html',
   styleUrls: ['../../../../shared/admin/crud-panel.scss', './news-editor.scss'],
 })
@@ -60,6 +62,8 @@ export class NewsEditor implements OnInit {
   });
   protected readonly saving = signal(false);
   protected readonly confirmingDelete = signal(false);
+  protected readonly uploadingImage = signal(false);
+  protected readonly imageError = signal<string | null>(null);
   protected readonly formError = signal<string | null>(null);
   /** Aviso para lectores de pantalla y para quien mira la pantalla tras guardar. */
   protected readonly notice = signal('');
@@ -105,6 +109,28 @@ export class NewsEditor implements OnInit {
       this.saved({ publishedAt: null }),
       'Se ha retirado la noticia: vuelve a ser un borrador.',
     );
+  }
+
+  /** Sube la imagen sin tocar el formulario: lo que se esté escribiendo no se pierde. */
+  protected uploadImage(file: File): void {
+    const news = this.news();
+    if (news === null) {
+      return;
+    }
+    this.uploadingImage.set(true);
+    this.imageError.set(null);
+    this.notice.set('');
+    this.api.uploadImage(news.id, file).subscribe({
+      next: (saved) => {
+        this.uploadingImage.set(false);
+        this.news.update((current) => current && { ...current, imageUrl: saved.imageUrl });
+        this.notice.set('Se ha cambiado la imagen.');
+      },
+      error: (error: unknown) => {
+        this.uploadingImage.set(false);
+        this.imageError.set(imageUploadError(error));
+      },
+    });
   }
 
   protected confirmDelete(): void {

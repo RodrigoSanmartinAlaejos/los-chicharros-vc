@@ -56,6 +56,11 @@ public class Team extends Auditable {
     this.ownClub = ownClub;
   }
 
+  /** El escudo o la foto del equipo, ya guardado (H14). */
+  public void changeCrest(String crestUrl) {
+    this.crestUrl = crestUrl;
+  }
+
   public Long getId() {
     return id;
   }

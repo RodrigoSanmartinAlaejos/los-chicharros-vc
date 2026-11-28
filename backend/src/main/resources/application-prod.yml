@@ -17,3 +17,9 @@ logging:
 springdoc:
   swagger-ui:
     supported-submit-methods: []
+
+# Imágenes en Cloudinary: el disco de Render se borra en cada despliegue
+app:
+  images:
+    storage: ${IMAGE_STORAGE:cloudinary}
+    cloudinary-folder: los-chicharros/prod

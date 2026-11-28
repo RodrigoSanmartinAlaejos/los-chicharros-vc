@@ -19,3 +19,16 @@
 tr.selected td {
   background: var(--color-muted);
 }
+
+// Escudo pequeño junto al nombre, si lo tiene (H14)
+.team {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.crest {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}

@@ -61,7 +61,9 @@ class SecurityConfig {
     "/api/v1/matches",
     "/api/v1/matches/*",
     "/api/v1/news",
-    "/api/v1/news/by-slug/*"
+    "/api/v1/news/by-slug/*",
+    // Imágenes guardadas en el disco en dev (LocalImageStorage)
+    "/api/images/**"
   };
 
   @Bean
