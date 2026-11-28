@@ -39,6 +39,12 @@ export const routes: Routes = [
           import('./features/admin/competitions/competitions').then((m) => m.Competitions),
       },
       {
+        path: 'competiciones/:id/clasificacion',
+        title: 'Clasificación',
+        loadComponent: () =>
+          import('./features/admin/competitions/standings/standings').then((m) => m.Standings),
+      },
+      {
         path: 'partidos',
         title: 'Partidos',
         loadComponent: () => import('./features/admin/matches/matches').then((m) => m.Matches),

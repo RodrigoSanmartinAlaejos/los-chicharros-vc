@@ -1,5 +1,6 @@
 // Tipos del contrato OpenAPI (etiqueta «Competiciones»). Las fechas viajan como texto ISO
 // (AAAA-MM-DD).
+import { TeamSummary } from '../teams/teams.models';
 
 export interface CompetitionRequest {
   seasonId: number;
@@ -12,6 +13,24 @@ export interface CompetitionRequest {
 
 export interface Competition extends CompetitionRequest {
   id: number;
+}
+
+/** Fila de la clasificación tal como se escribe a mano (fase 1). */
+export interface StandingRequest {
+  teamId: number;
+  /** Puede ser negativo por las sanciones. */
+  points: number;
+  played: number;
+  won: number;
+  lost: number;
+  setsWon: number;
+  setsLost: number;
+  penaltyPoints: number;
+}
+
+export interface Standing extends Omit<StandingRequest, 'teamId'> {
+  position: number;
+  team: TeamSummary;
 }
 
 export interface MatchdayRequest {

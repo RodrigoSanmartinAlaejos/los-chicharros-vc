@@ -143,6 +143,8 @@ Desde el #63, la API comprueba además que los dos equipos son de la temporada y
 
 Único: (`competition_id`, `team_id`) en `uk_standings_competition_team`. En la fase 1 se edita a mano; desde la fase 3 la recalcula el servicio.
 
+Desde el #65, la API comprueba además que cada equipo es de la temporada y la categoría de la competición y que los ganados y los perdidos suman los jugados (en voleibol no hay empates). Mientras un equipo tenga filas de clasificación no se puede borrar (409); borrar la competición borra su clasificación.
+
 ## `news_articles` (noticias)
 
 | Columna | Tipo | Nulo | Reglas | Significado |
@@ -206,7 +208,7 @@ Cada tabla en su migración, en este orden para respetar las claves foráneas:
 
 `people` va antes que `teams` porque su historia (H16) se hizo antes; ninguna de las dos depende de la otra, y `team_memberships` apunta a las dos.
 
-Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql` y, desde el #63, partidos en `R__seed_05_matches.sql`).
+Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql` y, desde el #63, partidos en `R__seed_05_matches.sql` y, desde el #65, la clasificación en `R__seed_06_standings.sql`).
 
 ## Decisiones
 

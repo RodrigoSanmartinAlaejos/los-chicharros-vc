@@ -13,6 +13,7 @@ import { ConfigurationApi } from '../configuration/configuration.api';
 import { CATEGORY_GENDER, Category, Season } from '../configuration/configuration.models';
 import { CompetitionsApi } from './competitions.api';
 import { Competition, CompetitionRequest } from './competitions.models';
+import { RouterLink } from '@angular/router';
 import { Matchdays } from './matchdays/matchdays';
 
 /**
@@ -21,7 +22,7 @@ import { Matchdays } from './matchdays/matchdays';
  */
 @Component({
   selector: 'cv-competitions',
-  imports: [ReactiveFormsModule, Matchdays],
+  imports: [ReactiveFormsModule, RouterLink, Matchdays],
   templateUrl: './competitions.html',
   styleUrls: ['../../../shared/admin/crud-panel.scss', './competitions.scss'],
 })
