@@ -1,0 +1,186 @@
+<section class="matchdays" aria-labelledby="matchdays-title">
+  <div class="panel__header">
+    <h2 id="matchdays-title" #heading tabindex="-1">Jornadas: {{ title() }}</h2>
+    <div class="panel__actions">
+      @if (!addOpen()) {
+        <button type="button" class="button button--primary" (click)="openAdd()">
+          + Añadir jornadas
+        </button>
+      }
+      <button type="button" class="button" (click)="closed.emit()">Cerrar</button>
+    </div>
+  </div>
+
+  <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+  @if (addOpen()) {
+    <form class="form form--top" [formGroup]="addForm" (ngSubmit)="add()" novalidate>
+      <h3>Añadir una jornada</h3>
+      <p class="field__hint">
+        Tras guardar, el formulario propone la siguiente jornada para que puedas meterlas seguidas.
+      </p>
+      @if (addError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field">
+        <label for="matchday-number">Número</label>
+        <input
+          id="matchday-number"
+          type="number"
+          min="1"
+          max="99"
+          formControlName="number"
+          aria-describedby="matchday-number-error"
+          [attr.aria-invalid]="addErrorOf('number') ? 'true' : null"
+        />
+        <p id="matchday-number-error" class="field__error">{{ addErrorOf('number') }}</p>
+      </div>
+      <div class="field">
+        <label for="matchday-date">Fecha prevista (opcional)</label>
+        <input
+          id="matchday-date"
+          type="date"
+          formControlName="scheduledDate"
+          [attr.min]="season()?.startDate ?? null"
+          [attr.max]="season()?.endDate ?? null"
+          aria-describedby="matchday-date-hint matchday-date-error"
+          [attr.aria-invalid]="addErrorOf('scheduledDate') ? 'true' : null"
+        />
+        @if (dateHint(); as hint) {
+          <span id="matchday-date-hint" class="field__hint">{{ hint }}</span>
+        }
+        <p id="matchday-date-error" class="field__error">{{ addErrorOf('scheduledDate') }}</p>
+      </div>
+      <div class="form__buttons">
+        <button type="submit" class="button button--primary" [disabled]="adding()">
+          {{ adding() ? 'Añadiendo…' : 'Añadir jornada' }}
+        </button>
+        <button type="button" class="button" (click)="addOpen.set(false)">Terminar</button>
+      </div>
+    </form>
+  }
+
+  <div class="panel__card">
+    @if (listError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando las jornadas…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las jornadas.
+          <button type="button" class="link-button" (click)="load()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (matchdays().length === 0) {
+          <p class="state">Todavía no hay jornadas.</p>
+        } @else {
+          <table class="panel__table">
+            <thead>
+              <tr>
+                <th scope="col">Jornada</th>
+                <th scope="col">Fecha prevista</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (matchday of matchdays(); track matchday.id) {
+                <tr>
+                  @if (editingId() === matchday.id) {
+                    <td colspan="3">
+                      <form
+                        class="inline-form"
+                        [formGroup]="editForm"
+                        (ngSubmit)="saveEdit(matchday)"
+                        novalidate
+                      >
+                        <div class="field">
+                          <label [for]="'edit-number-' + matchday.id">Número</label>
+                          <input
+                            [id]="'edit-number-' + matchday.id"
+                            type="number"
+                            min="1"
+                            max="99"
+                            formControlName="number"
+                            [attr.aria-invalid]="editErrorOf('number') ? 'true' : null"
+                          />
+                        </div>
+                        <div class="field">
+                          <label [for]="'edit-date-' + matchday.id">Fecha prevista</label>
+                          <input
+                            [id]="'edit-date-' + matchday.id"
+                            type="date"
+                            formControlName="scheduledDate"
+                            [attr.min]="season()?.startDate ?? null"
+                            [attr.max]="season()?.endDate ?? null"
+                            [attr.aria-invalid]="editErrorOf('scheduledDate') ? 'true' : null"
+                          />
+                        </div>
+                        <button type="submit" class="button button--primary">Guardar</button>
+                        <button type="button" class="button" (click)="editingId.set(null)">
+                          Cancelar
+                        </button>
+                        @if (
+                          editErrorOf('number') ?? editErrorOf('scheduledDate') ?? editError();
+                          as message
+                        ) {
+                          <p class="field__error" role="alert">{{ message }}</p>
+                        }
+                      </form>
+                    </td>
+                  } @else {
+                    <td data-label="Jornada">
+                      <span class="number">{{ matchday.number }}</span>
+                    </td>
+                    <td data-label="Fecha prevista">{{ formatDate(matchday.scheduledDate) }}</td>
+                    <td>
+                      @if (confirmingId() === matchday.id) {
+                        <div
+                          class="confirm"
+                          role="group"
+                          [attr.aria-label]="'Borrar la jornada ' + matchday.number"
+                        >
+                          <span>¿Borrar la jornada {{ matchday.number }}?</span>
+                          <button
+                            type="button"
+                            class="button button--danger"
+                            (click)="confirmRemove(matchday)"
+                          >
+                            Sí, borrar
+                          </button>
+                          <button type="button" class="button" (click)="confirmingId.set(null)">
+                            Cancelar
+                          </button>
+                        </div>
+                      } @else {
+                        <div class="panel__actions">
+                          <button type="button" class="link-button" (click)="startEdit(matchday)">
+                            Editar<span class="visually-hidden">
+                              la jornada {{ matchday.number }}</span
+                            >
+                          </button>
+                          <button
+                            type="button"
+                            class="link-button link-button--danger"
+                            (click)="askRemove(matchday)"
+                          >
+                            Borrar<span class="visually-hidden">
+                              la jornada {{ matchday.number }}</span
+                            >
+                          </button>
+                        </div>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    }
+  </div>
+</section>

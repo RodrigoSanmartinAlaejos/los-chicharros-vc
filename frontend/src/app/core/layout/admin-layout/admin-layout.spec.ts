@@ -36,6 +36,7 @@ describe('AdminLayout', () => {
     expect(links.map((a) => a.textContent?.trim())).toEqual([
       'Equipos',
       'Personas',
+      'Competiciones',
       'Configuración',
     ]);
     expect(links[0].getAttribute('href')).toBe('/gestion/equipos');

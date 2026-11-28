@@ -2194,6 +2194,7 @@ components:
         number:
           type: integer
           minimum: 1
+          maximum: 99
         scheduledDate:
           type:
           - string

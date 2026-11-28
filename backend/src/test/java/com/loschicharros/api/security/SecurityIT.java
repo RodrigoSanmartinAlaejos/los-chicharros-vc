@@ -32,7 +32,8 @@ class SecurityIT extends AbstractIntegrationTest {
   @Autowired private JwtEncoder encoder;
 
   @ParameterizedTest
-  @ValueSource(strings = {"/api/v1/seasons", "/api/v1/categories", "/api/v1/venues"})
+  @ValueSource(
+      strings = {"/api/v1/seasons", "/api/v1/categories", "/api/v1/venues", "/api/v1/competitions"})
   void shouldListConfigurationWithoutSession(String url) throws Exception {
     mockMvc.perform(get(url)).andExpect(status().isOk());
   }

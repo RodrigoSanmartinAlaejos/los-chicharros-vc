@@ -49,7 +49,14 @@ class SecurityConfig {
 
   /** Lecturas que cualquiera puede hacer sin sesión. */
   private static final String[] PUBLIC_GETS = {
-    "/api/v1/seasons", "/api/v1/categories", "/api/v1/venues", "/api/v1/teams", "/api/v1/teams/*"
+    "/api/v1/seasons",
+    "/api/v1/categories",
+    "/api/v1/venues",
+    "/api/v1/teams",
+    "/api/v1/teams/*",
+    "/api/v1/competitions",
+    "/api/v1/competitions/*",
+    "/api/v1/competitions/*/matchdays"
   };
 
   @Bean

@@ -1,0 +1,35 @@
+// Lo propio de la pantalla de competiciones: filtros y fila seleccionada. El resto, en
+// shared/admin/crud-panel.scss.
+@use '../../../../styles/tokens' as *;
+
+.intro {
+  margin-bottom: var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.form--top {
+  margin: 0 0 var(--space-4);
+}
+
+.federation {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+
+tr.selected td {
+  background: var(--color-muted);
+}
+
+// En móvil el dato va a la derecha de su etiqueta: la federación, también
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .competition {
+    text-align: right;
+  }
+}
