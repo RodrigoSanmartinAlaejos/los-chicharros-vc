@@ -2,7 +2,6 @@ package com.loschicharros.api.competitions;
 
 import com.loschicharros.api.competitions.dto.CompetitionRequest;
 import com.loschicharros.api.competitions.dto.CompetitionResponse;
-import com.loschicharros.api.competitions.dto.MatchdayResponse;
 import com.loschicharros.api.security.Roles;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,9 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
- * Competiciones y sus jornadas (contrato OpenAPI, etiqueta «Competiciones»). Leer es público: la
- * web las muestra en el calendario y la clasificación. Escribir es solo del administrador (matriz
- * de permisos).
+ * Competiciones (contrato OpenAPI, etiqueta «Competiciones»). Leer es público: la web las muestra
+ * en el calendario y la clasificación. Escribir es solo del administrador (matriz de permisos). Las
+ * jornadas con sus partidos se leen en {@code MatchdayScheduleController}.
  */
 @Tag(name = "Competiciones")
 @RestController
@@ -51,12 +50,6 @@ class CompetitionController {
   @GetMapping("/{id}")
   CompetitionResponse findById(@PathVariable Long id) {
     return competitions.findById(id);
-  }
-
-  @Operation(summary = "Jornadas con sus partidos")
-  @GetMapping("/{id}/matchdays")
-  List<MatchdayResponse> matchdays(@PathVariable Long id) {
-    return competitions.matchdays(id);
   }
 
   @PreAuthorize(Roles.ONLY_ADMIN)

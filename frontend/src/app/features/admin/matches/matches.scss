@@ -1,0 +1,61 @@
+// Lo propio del calendario del panel: filtros, jornadas y estados de los partidos. El resto, en
+// shared/admin/crud-panel.scss.
+@use '../../../../styles/tokens' as *;
+
+.intro {
+  margin-bottom: var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.form--top {
+  margin: 0 0 var(--space-5);
+}
+
+.matchday {
+  margin-top: var(--space-5);
+
+  .panel__header {
+    margin-bottom: var(--space-2);
+  }
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.status {
+  &--postponed {
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+  }
+
+  &--cancelled {
+    border-color: var(--color-text-secondary);
+    color: var(--color-text-secondary);
+    text-decoration: line-through;
+  }
+}
+
+.versus {
+  color: var(--color-text-secondary);
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+// En móvil el dato va a la derecha de su etiqueta, también cuando el partido ocupa dos líneas
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .teams {
+    text-align: right;
+  }
+}

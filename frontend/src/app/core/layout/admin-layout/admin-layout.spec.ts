@@ -37,6 +37,7 @@ describe('AdminLayout', () => {
       'Equipos',
       'Personas',
       'Competiciones',
+      'Partidos',
       'Configuración',
     ]);
     expect(links[0].getAttribute('href')).toBe('/gestion/equipos');
