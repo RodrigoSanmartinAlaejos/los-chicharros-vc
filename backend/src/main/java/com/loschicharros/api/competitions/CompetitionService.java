@@ -6,7 +6,6 @@ import com.loschicharros.api.common.error.InvalidFieldException;
 import com.loschicharros.api.common.error.ResourceNotFoundException;
 import com.loschicharros.api.competitions.dto.CompetitionRequest;
 import com.loschicharros.api.competitions.dto.CompetitionResponse;
-import com.loschicharros.api.competitions.dto.MatchdayResponse;
 import com.loschicharros.api.seasons.Season;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -61,15 +60,14 @@ public class CompetitionService {
   }
 
   /**
-   * Jornadas de una competición, por número.
+   * Jornadas de una competición, por número. Las usa el calendario para mostrar cada jornada con
+   * sus partidos.
    *
    * @throws ResourceNotFoundException si la competición no existe
    */
-  public List<MatchdayResponse> matchdays(Long id) {
+  public List<Matchday> matchdaysOf(Long id) {
     get(id);
-    return matchdays.findByCompetitionIdOrderByNumber(id).stream()
-        .map(MatchdayResponse::from)
-        .toList();
+    return matchdays.findByCompetitionIdOrderByNumber(id);
   }
 
   /**

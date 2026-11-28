@@ -162,3 +162,42 @@ writeSeed(
   ],
   [...competitions, ...matchdays],
 );
+
+// ---------- matches (H19) ----------
+// Sin clave única natural: el partido se reconoce por su jornada y sus dos equipos (un equipo
+// juega una vez por jornada). El pabellón, por su nombre.
+const teamId = (code) => {
+  const t = teamByCode[code];
+  return (
+    `(SELECT id FROM teams WHERE season_id = ${seasonId(t.season)}` +
+    ` AND category_id = ${categoryId(t.category)} AND name = ${text(t.name)})`
+  );
+};
+const venueByCode = Object.fromEntries(readCsv('venues.csv').map((v) => [v.code, v]));
+const venueId = (code) =>
+  code === '' ? 'NULL' : `(SELECT id FROM venues WHERE name = ${text(venueByCode[code].name)})`;
+const sets = (value) => (value === '' ? 'NULL' : value);
+const matchRows = readCsv('matches.csv').map((m) => {
+  const c = competitionByCode[m.competition];
+  const startsAt = m.starts_at.replace('T', ' ').replace('Z', '');
+  return (
+    'INSERT INTO matches (matchday_id, home_team_id, away_team_id, venue_id, starts_at, status,' +
+    ' home_sets, away_sets, created_at, updated_at)\n' +
+    `  SELECT md.id, ${teamId(m.home_team)}, ${teamId(m.away_team)}, ${venueId(m.venue)},` +
+    ` ${text(startsAt)}, ${text(m.status)}, ${sets(m.home_sets)}, ${sets(m.away_sets)},` +
+    ' UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)\n' +
+    `  FROM matchdays md JOIN competitions c ON c.id = md.competition_id` +
+    ` WHERE ${competitionWhere(c)} AND md.number = ${m.matchday}\n` +
+    `  AND NOT EXISTS (SELECT 1 FROM matches x WHERE x.matchday_id = md.id` +
+    ` AND x.home_team_id = ${teamId(m.home_team)} AND x.away_team_id = ${teamId(m.away_team)});`
+  );
+});
+writeSeed(
+  'R__seed_05_matches.sql',
+  [
+    'Semilla de dev y staging: los partidos de matches.csv (docs/04-datos/datos-ejemplo/), con su',
+    'estado y su marcador. No se edita a mano: la escribe scripts/datos-ejemplo/semillas.mjs.',
+    'Es repetible e idempotente: cada partido se inserta solo si su jornada no lo tiene ya.',
+  ],
+  matchRows,
+);

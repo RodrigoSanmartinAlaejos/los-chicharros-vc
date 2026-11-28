@@ -1,0 +1,276 @@
+<h1>Partidos</h1>
+<p class="intro">
+  El calendario de cada competición, jornada a jornada. Las horas son las de Canarias. Los partidos
+  aplazados y cancelados se ven así en la web hasta que se vuelvan a programar.
+</p>
+
+<div class="panel__header">
+  <div class="filters">
+    <div class="field">
+      <label for="matches-season">Temporada</label>
+      <select id="matches-season" [formControl]="seasonFilter">
+        @for (season of seasons(); track season.id) {
+          <option [ngValue]="season.id">
+            {{ season.name }}{{ season.active ? ' (activa)' : '' }}
+          </option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="matches-competition">Competición</label>
+      <select id="matches-competition" [formControl]="competitionFilter">
+        @for (competition of competitions(); track competition.id) {
+          <option [ngValue]="competition.id">{{ competition.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</div>
+
+<p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+@if (formOpen()) {
+  <form class="form form--top" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <h2>{{ editingId() === null ? 'Nuevo partido' : 'Editar partido' }}</h2>
+    @if (formError(); as message) {
+      <p class="alert" role="alert">{{ message }}</p>
+    }
+    <div class="field">
+      <label for="match-matchday">Jornada</label>
+      <select
+        id="match-matchday"
+        formControlName="matchdayId"
+        aria-describedby="match-matchday-error"
+        [attr.aria-invalid]="errorOf('matchdayId') ? 'true' : null"
+      >
+        @for (matchday of schedule(); track matchday.id) {
+          <option [ngValue]="matchday.id">{{ matchdayLabel(matchday) }}</option>
+        }
+      </select>
+      <p id="match-matchday-error" class="field__error">{{ errorOf('matchdayId') }}</p>
+    </div>
+    <div class="field">
+      <label for="match-starts-at">Fecha y hora</label>
+      <input
+        id="match-starts-at"
+        type="datetime-local"
+        formControlName="startsAt"
+        aria-describedby="match-starts-at-error"
+        [attr.aria-invalid]="errorOf('startsAt') ? 'true' : null"
+      />
+      <p id="match-starts-at-error" class="field__error">{{ errorOf('startsAt') }}</p>
+    </div>
+    <div class="field">
+      <label for="match-home">Local</label>
+      <select
+        id="match-home"
+        formControlName="homeTeamId"
+        aria-describedby="match-home-error"
+        [attr.aria-invalid]="errorOf('homeTeamId') ? 'true' : null"
+      >
+        <option [ngValue]="null" disabled>Elige un equipo</option>
+        @for (team of teams(); track team.id) {
+          <option [ngValue]="team.id">{{ team.name }}</option>
+        }
+      </select>
+      <p id="match-home-error" class="field__error">{{ errorOf('homeTeamId') }}</p>
+    </div>
+    <div class="field">
+      <label for="match-away">Visitante</label>
+      <select
+        id="match-away"
+        formControlName="awayTeamId"
+        aria-describedby="match-away-error"
+        [attr.aria-invalid]="errorOf('awayTeamId') ? 'true' : null"
+      >
+        <option [ngValue]="null" disabled>Elige un equipo</option>
+        @for (team of teams(); track team.id) {
+          <option [ngValue]="team.id">{{ team.name }}</option>
+        }
+      </select>
+      <p id="match-away-error" class="field__error">{{ errorOf('awayTeamId') }}</p>
+    </div>
+    <div class="field field--wide">
+      <label for="match-venue">Pabellón</label>
+      <select
+        id="match-venue"
+        formControlName="venueId"
+        aria-describedby="match-venue-hint match-venue-error"
+        [attr.aria-invalid]="errorOf('venueId') ? 'true' : null"
+      >
+        <option [ngValue]="null">Otro (fuera de casa)</option>
+        @for (venue of venues(); track venue.id) {
+          <option [ngValue]="venue.id">{{ venue.name }}</option>
+        }
+      </select>
+      <span id="match-venue-hint" class="field__hint"
+        >Solo se indica si se juega en una de las instalaciones del club.</span
+      >
+      <p id="match-venue-error" class="field__error">{{ errorOf('venueId') }}</p>
+    </div>
+    <div class="form__buttons">
+      <button type="submit" class="button button--primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+      <button type="button" class="button" (click)="cancel()">Cancelar</button>
+    </div>
+  </form>
+}
+
+@if (listError(); as message) {
+  <p class="alert" role="alert">{{ message }}</p>
+}
+
+@switch (status()) {
+  @case ('loading') {
+    <p class="state">Cargando el calendario…</p>
+  }
+  @case ('error') {
+    <p class="state">
+      No se ha podido cargar el calendario.
+      <button type="button" class="link-button" (click)="loadSchedule()">Reintentar</button>
+    </p>
+  }
+  @default {
+    @if (competitions().length === 0) {
+      <p class="state">No hay competiciones en esta temporada. Créalas primero en Competiciones.</p>
+    } @else if (schedule().length === 0) {
+      <p class="state">Esta competición todavía no tiene jornadas. Añádelas en Competiciones.</p>
+    } @else {
+      @for (matchday of schedule(); track matchday.id) {
+        <section class="matchday" [attr.aria-labelledby]="'matchday-' + matchday.id">
+          <div class="panel__header">
+            <h2 [id]="'matchday-' + matchday.id">{{ matchdayLabel(matchday) }}</h2>
+            <button type="button" class="button" (click)="startCreate(matchday)">
+              + Partido<span class="visually-hidden"> en la jornada {{ matchday.number }}</span>
+            </button>
+          </div>
+          <div class="panel__card">
+            @if (matchday.matches.length === 0) {
+              <p class="state">Todavía no hay partidos en esta jornada.</p>
+            } @else {
+              <table class="panel__table">
+                <thead>
+                  <tr>
+                    <th scope="col">Fecha y hora</th>
+                    <th scope="col">Partido</th>
+                    <th scope="col">Pabellón</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (match of matchday.matches; track match.id) {
+                    <tr>
+                      <td data-label="Fecha y hora">{{ formatDateTime(match.startsAt) }}</td>
+                      <td data-label="Partido">
+                        <span class="teams">
+                          <strong>{{ match.homeTeam.name }}</strong>
+                          <span class="versus"> - </span>
+                          <strong>{{ match.awayTeam.name }}</strong>
+                        </span>
+                      </td>
+                      <td data-label="Pabellón">{{ match.venue?.name ?? 'Fuera' }}</td>
+                      <td data-label="Estado">
+                        <span
+                          class="badge"
+                          [class.status--postponed]="match.status === 'POSTPONED'"
+                          [class.status--cancelled]="match.status === 'CANCELLED'"
+                          >{{ statusLabels[match.status] }}
+                          @if (match.status === 'FINISHED') {
+                            {{ match.homeSets }}-{{ match.awaySets }}
+                          }
+                        </span>
+                      </td>
+                      <td>
+                        @if (confirming()?.id === match.id) {
+                          <div class="confirm" role="group" [attr.aria-label]="title(match)">
+                            <span>
+                              {{
+                                confirming()?.action === 'delete'
+                                  ? '¿Borrar el partido?'
+                                  : '¿Cancelar el partido?'
+                              }}
+                            </span>
+                            <button
+                              type="button"
+                              class="button button--danger"
+                              (click)="confirm(match)"
+                            >
+                              {{
+                                confirming()?.action === 'delete' ? 'Sí, borrar' : 'Sí, cancelar'
+                              }}
+                            </button>
+                            <button type="button" class="button" (click)="confirming.set(null)">
+                              No
+                            </button>
+                          </div>
+                        } @else if (reschedulingId() === match.id) {
+                          <form
+                            class="inline-form"
+                            [formGroup]="rescheduleForm"
+                            (ngSubmit)="reschedule(match)"
+                            novalidate
+                          >
+                            <div class="field">
+                              <label [for]="'reschedule-' + match.id">Nueva fecha y hora</label>
+                              <input
+                                [id]="'reschedule-' + match.id"
+                                type="datetime-local"
+                                formControlName="startsAt"
+                              />
+                            </div>
+                            <button type="submit" class="button button--primary">Programar</button>
+                            <button type="button" class="button" (click)="reschedulingId.set(null)">
+                              Cancelar
+                            </button>
+                            @if (rescheduleError(); as message) {
+                              <p class="field__error" role="alert">{{ message }}</p>
+                            }
+                          </form>
+                        } @else {
+                          <div class="panel__actions">
+                            <button type="button" class="link-button" (click)="startEdit(match)">
+                              Editar<span class="visually-hidden"> {{ title(match) }}</span>
+                            </button>
+                            @if (isPending(match)) {
+                              <button
+                                type="button"
+                                class="link-button"
+                                (click)="startReschedule(match)"
+                              >
+                                Reprogramar<span class="visually-hidden"> {{ title(match) }}</span>
+                              </button>
+                            } @else if (match.status === 'SCHEDULED') {
+                              <button type="button" class="link-button" (click)="postpone(match)">
+                                Aplazar<span class="visually-hidden"> {{ title(match) }}</span>
+                              </button>
+                              <button
+                                type="button"
+                                class="link-button"
+                                (click)="askCancelMatch(match)"
+                              >
+                                Cancelar<span class="visually-hidden"> {{ title(match) }}</span>
+                              </button>
+                            }
+                            <button
+                              type="button"
+                              class="link-button link-button--danger"
+                              (click)="askDelete(match)"
+                            >
+                              Borrar<span class="visually-hidden"> {{ title(match) }}</span>
+                            </button>
+                          </div>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </section>
+      }
+    }
+  }
+}

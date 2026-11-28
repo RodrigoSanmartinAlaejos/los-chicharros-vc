@@ -125,6 +125,8 @@ Al borrar una persona (borrado lógico), sale de las plantillas de las temporada
 
 Índice: `idx_matches_starts_at` para el calendario. `forfeited_team_id` se añade en la fase 3.
 
+Desde el #63, la API comprueba además que los dos equipos son de la temporada y la categoría de la competición, que ninguno juega otro partido en la misma jornada (409) y que el partido cae dentro de la temporada, contando los días en la hora de Canarias. Mientras un partido exista, no se pueden borrar su jornada, su competición, sus equipos ni su pabellón (409).
+
 ## `standings` (clasificación)
 
 | Columna | Tipo | Nulo | Reglas | Significado |
@@ -204,7 +206,7 @@ Cada tabla en su migración, en este orden para respetar las claves foráneas:
 
 `people` va antes que `teams` porque su historia (H16) se hizo antes; ninguna de las dos depende de la otra, y `team_memberships` apunta a las dos.
 
-Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql`).
+Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql` y, desde el #63, partidos en `R__seed_05_matches.sql`).
 
 ## Decisiones
 
