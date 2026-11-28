@@ -27,6 +27,9 @@ export interface MatchRequest {
 export interface MatchPatchRequest {
   status?: MatchStatus;
   startsAt?: string;
+  /** Con los dos sets, el partido queda finalizado: uno llega a 3 y el otro no. */
+  homeSets?: number;
+  awaySets?: number;
 }
 
 export interface Match {

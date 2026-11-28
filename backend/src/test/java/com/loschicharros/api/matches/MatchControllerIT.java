@@ -204,14 +204,17 @@ class MatchControllerIT extends AbstractIntegrationTest {
                 .content("{\"status\":\"CANCELLED\"}"))
         .andExpect(jsonPath("$.status").value("CANCELLED"));
 
-    // El resultado no se pone a mano: llega con el marcador (H20)
+    // Finalizado no se pone a mano: llega con el marcador (H20)
     mockMvc
         .perform(
             admin(patch(MATCHES + "/" + match))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\":\"FINISHED\"}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.errors[0].field").value("status"));
+        .andExpect(jsonPath("$.errors[0].field").value("status"))
+        .andExpect(
+            jsonPath("$.errors[0].message")
+                .value("Para finalizar un partido, indica su marcador en sets"));
     mockMvc
         .perform(
             admin(patch(MATCHES + "/" + match))
@@ -224,6 +227,106 @@ class MatchControllerIT extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\":\"SCHEDULED\"}"))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void shouldFinishMatchWithItsScoreAndShowItInCalendar() throws Exception {
+    // Dado: un partido ya jugado
+    var match = create(jornada1, chicharros, roque, pabellon, "2026-10-03T09:30:00Z");
+
+    // Cuando
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + match))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"homeSets\":3,\"awaySets\":1}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("FINISHED"))
+        .andExpect(jsonPath("$.homeSets").value(3))
+        .andExpect(jsonPath("$.awaySets").value(1));
+
+    // Entonces: se ve en el calendario y en la jornada, sin sesión
+    mockMvc
+        .perform(get(MATCHES).param("status", "FINISHED"))
+        .andExpect(jsonPath("$.content[0].homeSets").value(3))
+        .andExpect(jsonPath("$.content[0].awaySets").value(1));
+    mockMvc
+        .perform(get("/api/v1/competitions/" + liga + "/matchdays"))
+        .andExpect(jsonPath("$[0].matches[0].status").value("FINISHED"))
+        .andExpect(jsonPath("$[0].matches[0].awaySets").value(1));
+
+    // Se puede corregir, y al volver a programarlo pierde el marcador
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + match))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"homeSets\":2,\"awaySets\":3,\"status\":\"FINISHED\"}"))
+        .andExpect(jsonPath("$.homeSets").value(2));
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + match))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"SCHEDULED\"}"))
+        .andExpect(jsonPath("$.status").value("SCHEDULED"))
+        .andExpect(jsonPath("$.homeSets").isEmpty())
+        .andExpect(jsonPath("$.awaySets").isEmpty());
+  }
+
+  @Test
+  void shouldRejectImpossibleScoreAndScoreOfMatchNotPlayedYet() throws Exception {
+    var match = create(jornada1, chicharros, roque, null, "2026-10-03T09:30:00Z");
+
+    for (var score : new String[] {"3,3", "2,1", "0,0"}) {
+      var sets = score.split(",");
+      mockMvc
+          .perform(
+              admin(patch(MATCHES + "/" + match))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"homeSets\":" + sets[0] + ",\"awaySets\":" + sets[1] + "}"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.errors[0].field").value("homeSets"))
+          .andExpect(
+              jsonPath("$.errors[0].message")
+                  .value(
+                      "Uno de los dos tiene que llegar a 3 sets y el otro quedarse en menos de 3"));
+    }
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + match))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"homeSets\":4,\"awaySets\":0}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errors[0].field").value("homeSets"));
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + match))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"homeSets\":3}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errors[0].field").value("awaySets"));
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + match))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"homeSets\":3,\"awaySets\":0,\"status\":\"CANCELLED\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errors[0].field").value("status"));
+    mockMvc
+        .perform(get(MATCHES + "/" + match))
+        .andExpect(jsonPath("$.status").value("SCHEDULED"))
+        .andExpect(jsonPath("$.homeSets").isEmpty());
+
+    // Un partido que todavía no se ha jugado no puede tener resultado
+    var future = create(jornada2, chicharros, roque, null, "2027-05-15T10:00:00Z");
+    mockMvc
+        .perform(
+            admin(patch(MATCHES + "/" + future))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"homeSets\":3,\"awaySets\":0}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.errors[0].message")
+                .value("El partido todavía no se ha jugado: no puede tener resultado"));
   }
 
   @Test

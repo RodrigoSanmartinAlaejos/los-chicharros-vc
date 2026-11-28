@@ -1,7 +1,8 @@
 <h1>Partidos</h1>
 <p class="intro">
   El calendario de cada competición, jornada a jornada. Las horas son las de Canarias. Los partidos
-  aplazados y cancelados se ven así en la web hasta que se vuelvan a programar.
+  aplazados y cancelados se ven así en la web hasta que se vuelvan a programar. Cuando se juega un
+  partido, pon su resultado en sets.
 </p>
 
 <div class="panel__header">
@@ -205,6 +206,47 @@
                               No
                             </button>
                           </div>
+                        } @else if (scoringId() === match.id) {
+                          <form
+                            class="inline-form"
+                            [formGroup]="scoreForm"
+                            (ngSubmit)="saveScore(match)"
+                            novalidate
+                          >
+                            <div class="field field--sets">
+                              <label [for]="'home-sets-' + match.id"
+                                >Sets de {{ match.homeTeam.name }}</label
+                              >
+                              <input
+                                [id]="'home-sets-' + match.id"
+                                type="number"
+                                min="0"
+                                max="3"
+                                formControlName="homeSets"
+                              />
+                            </div>
+                            <div class="field field--sets">
+                              <label [for]="'away-sets-' + match.id"
+                                >Sets de {{ match.awayTeam.name }}</label
+                              >
+                              <input
+                                [id]="'away-sets-' + match.id"
+                                type="number"
+                                min="0"
+                                max="3"
+                                formControlName="awaySets"
+                              />
+                            </div>
+                            <button type="submit" class="button button--primary">
+                              Guardar resultado
+                            </button>
+                            <button type="button" class="button" (click)="scoringId.set(null)">
+                              Cancelar
+                            </button>
+                            @if (scoreError(); as message) {
+                              <p class="field__error" role="alert">{{ message }}</p>
+                            }
+                          </form>
                         } @else if (reschedulingId() === match.id) {
                           <form
                             class="inline-form"
@@ -230,6 +272,12 @@
                           </form>
                         } @else {
                           <div class="panel__actions">
+                            @if (canScore(match)) {
+                              <button type="button" class="link-button" (click)="startScore(match)">
+                                {{ match.status === 'FINISHED' ? 'Corregir resultado' : 'Resultado'
+                                }}<span class="visually-hidden"> {{ title(match) }}</span>
+                              </button>
+                            }
                             <button type="button" class="link-button" (click)="startEdit(match)">
                               Editar<span class="visually-hidden"> {{ title(match) }}</span>
                             </button>
