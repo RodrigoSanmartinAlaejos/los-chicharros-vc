@@ -94,8 +94,9 @@ paths:
       tags:
       - Noticias
       summary: Listar noticias
-      description: Sin sesión devuelve solo las publicadas, de la más reciente a la más antigua. `status=draft`
-        (solo administrador) devuelve los borradores.
+      description: Sin sesión devuelve solo las publicadas que ya se ven en la web (fecha de publicación pasada),
+        de la más reciente a la más antigua. `status=draft` (borradores) y `status=all` (todas, también las programadas)
+        son solo del administrador.
       security:
       - {}
       - bearerAuth: []
@@ -115,6 +116,7 @@ paths:
           enum:
           - published
           - draft
+          - all
           default: published
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/Size'
@@ -1761,6 +1763,7 @@ components:
         content:
           type: string
           minLength: 1
+          maxLength: 50000
           description: Markdown
         type:
           $ref: '#/components/schemas/NewsType'
@@ -1776,6 +1779,8 @@ components:
           - string
           - 'null'
           format: date-time
+          description: Fecha de publicación; `null` la retira (vuelve a borrador). Si es futura, la noticia no se
+            ve en la web hasta entonces.
         featured:
           type: boolean
     SeasonRequest:

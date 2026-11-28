@@ -1,4 +1,4 @@
-import { formatClubDateTime, fromClubInput, toClubInput } from './club-time';
+import { formatClubDate, formatClubDateTime, fromClubInput, toClubInput } from './club-time';
 
 describe('club-time', () => {
   it('pasa de UTC a la hora de Canarias en invierno y en verano', () => {
@@ -17,5 +17,11 @@ describe('club-time', () => {
   it('escribe la fecha con el día de la semana y la hora del club', () => {
     expect(formatClubDateTime('2026-10-03T09:30:00Z')).toContain('03/10/2026');
     expect(formatClubDateTime('2026-10-03T09:30:00Z')).toContain('10:30');
+  });
+
+  it('escribe solo el día del club', () => {
+    expect(formatClubDate('2026-11-14T10:00:00Z')).toBe('14/11/2026');
+    // A las 23:30 UTC del 24 de octubre ya es día 25 en Canarias
+    expect(formatClubDate('2026-10-24T23:30:00Z')).toBe('25/10/2026');
   });
 });

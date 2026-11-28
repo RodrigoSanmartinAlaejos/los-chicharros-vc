@@ -223,3 +223,25 @@ writeSeed(
   ],
   standingRows,
 );
+
+// ---------- news_articles (H12) ----------
+// Clave única slug: INSERT IGNORE no repite una noticia que ya esté, y una borrada en el panel no
+// vuelve (su fila sigue ahí con deleted_at). La que no tiene published_at es un borrador.
+const datetime = (value) => (value === '' ? 'NULL' : text(value.replace('T', ' ').replace('Z', '')));
+const newsRows = readCsv('news_articles.csv').map(
+  (n) =>
+    'INSERT IGNORE INTO news_articles (title, slug, summary, content, image_url, type, featured,' +
+    ' published_at, created_at, updated_at)\n' +
+    `  VALUES (${text(n.title)}, ${text(n.slug)}, ${text(n.summary)}, ${text(n.content)},` +
+    ` ${text(n.image_url)}, ${text(n.type)}, ${bool(n.featured)}, ${datetime(n.published_at)},` +
+    ' UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));',
+);
+writeSeed(
+  'R__seed_07_news.sql',
+  [
+    'Semilla de dev y staging: las noticias de news_articles.csv (docs/04-datos/datos-ejemplo/).',
+    'No se edita a mano: la escribe scripts/datos-ejemplo/semillas.mjs.',
+    'Es repetible e idempotente: INSERT IGNORE sobre la clave única del slug.',
+  ],
+  newsRows,
+);

@@ -13,6 +13,13 @@ const DATE_TIME = new Intl.DateTimeFormat('es-ES', {
   timeZone: CLUB_ZONE,
 });
 
+const DATE = new Intl.DateTimeFormat('es-ES', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: CLUB_ZONE,
+});
+
 const PARTS = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   month: '2-digit',
@@ -26,6 +33,11 @@ const PARTS = new Intl.DateTimeFormat('en-GB', {
 /** «sáb, 03/10/2026, 09:30» en la hora del club. */
 export function formatClubDateTime(iso: string): string {
   return DATE_TIME.format(new Date(iso));
+}
+
+/** «14/11/2026»: el día del club en que cae ese instante. */
+export function formatClubDate(iso: string): string {
+  return DATE.format(new Date(iso));
 }
 
 /** Valor para un `<input type="datetime-local">`: «2026-10-03T09:30» en la hora del club. */

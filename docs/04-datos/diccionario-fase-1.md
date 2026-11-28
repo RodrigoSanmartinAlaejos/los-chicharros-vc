@@ -161,6 +161,8 @@ Desde el #65, la API comprueba además que cada equipo es de la temporada y la c
 
 Índice: `idx_news_articles_published_at`.
 
+Desde el #56: una noticia con `published_at` futuro está programada y no se ve en la web hasta esa fecha. El slug no se reutiliza nunca, ni el de una noticia borrada. El cuerpo admite hasta 50 000 caracteres (lo comprueba la API).
+
 ## `users` (usuarios)
 
 | Columna | Tipo | Nulo | Reglas | Significado |
@@ -208,7 +210,7 @@ Cada tabla en su migración, en este orden para respetar las claves foráneas:
 
 `people` va antes que `teams` porque su historia (H16) se hizo antes; ninguna de las dos depende de la otra, y `team_memberships` apunta a las dos.
 
-Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql` y, desde el #63, partidos en `R__seed_05_matches.sql` y, desde el #65, la clasificación en `R__seed_06_standings.sql`).
+Los datos de ejemplo de `dev` y `staging` no son migraciones versionadas: van en `db/seed` como migraciones repetibles (reglas técnicas, regla 4 de bases de datos). La primera es `R__seed_01_configuration.sql`: la temporada 2026-27 activa y los dos pabellones; las demás las genera `scripts/datos-ejemplo/semillas.mjs` (personas, equipos y, desde el #62, competiciones y jornadas en `R__seed_04_competitions.sql` y, desde el #63, partidos en `R__seed_05_matches.sql` y, desde el #65, la clasificación en `R__seed_06_standings.sql` y, desde el #56, las noticias en `R__seed_07_news.sql`).
 
 ## Decisiones
 

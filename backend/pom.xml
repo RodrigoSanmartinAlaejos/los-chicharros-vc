@@ -34,6 +34,9 @@
     <springdoc.version>3.2.1</springdoc.version>
     <!-- Límite de peticiones por IP en /api/v1/auth/** (reglas técnicas, regla 5 de autenticación) -->
     <bucket4j.version>8.23.0</bucket4j.version>
+    <!-- Cuerpo de las noticias: Markdown a HTML y saneado con lista blanca (reglas técnicas, regla 15 de Java) -->
+    <commonmark.version>0.33.0</commonmark.version>
+    <owasp-java-html-sanitizer.version>20261110.1</owasp-java-html-sanitizer.version>
   </properties>
 
   <dependencies>
@@ -74,6 +77,21 @@
       <groupId>com.bucket4j</groupId>
       <artifactId>bucket4j_jdk17-core</artifactId>
       <version>${bucket4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark</artifactId>
+      <version>${commonmark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>${commonmark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+      <artifactId>owasp-java-html-sanitizer</artifactId>
+      <version>${owasp-java-html-sanitizer.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>

@@ -8,6 +8,8 @@
   color: var(--color-primary);
   font: inherit;
   font-weight: 600;
+  // También en un enlace con aspecto de botón («+ Nueva noticia»)
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -122,4 +124,15 @@
   color: var(--color-success);
   font-size: var(--font-size-small);
   font-weight: 600;
+}
+
+// Insignia gris (un borrador, por ejemplo) y ámbar (algo pendiente: una noticia programada)
+.badge--muted {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-secondary);
+}
+
+.badge--warning {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
 }

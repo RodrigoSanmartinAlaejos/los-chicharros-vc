@@ -21,7 +21,19 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./core/layout/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'configuracion' },
+      { path: '', pathMatch: 'full', redirectTo: 'noticias' },
+      {
+        path: 'noticias',
+        title: 'Noticias',
+        loadComponent: () => import('./features/admin/news/news').then((m) => m.NewsList),
+      },
+      {
+        // «nueva» o el id de la noticia
+        path: 'noticias/:id',
+        title: 'Editor de noticia',
+        loadComponent: () =>
+          import('./features/admin/news/editor/news-editor').then((m) => m.NewsEditor),
+      },
       {
         path: 'equipos',
         title: 'Equipos',
