@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Category, Season } from '../configuration/configuration.models';
 import { Competitions } from './competitions';
 import { Competition } from './competitions.models';
@@ -25,7 +26,7 @@ describe('Competitions', () => {
   async function render() {
     TestBed.configureTestingModule({
       imports: [Competitions],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     http = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(Competitions);

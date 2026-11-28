@@ -201,3 +201,25 @@ writeSeed(
   ],
   matchRows,
 );
+
+// ---------- standings (H21) ----------
+// Clave única competición + equipo: INSERT IGNORE no repite una fila que ya esté.
+const standingRows = readCsv('standings.csv').map((s) => {
+  const c = competitionByCode[s.competition];
+  return (
+    'INSERT IGNORE INTO standings (competition_id, team_id, points, played, won, lost, sets_won,' +
+    ' sets_lost, penalty_points, created_at, updated_at)\n' +
+    `  SELECT c.id, ${teamId(s.team)}, ${s.points}, ${s.played}, ${s.won}, ${s.lost},` +
+    ` ${s.sets_won}, ${s.sets_lost}, ${s.penalty_points}, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)` +
+    ` FROM competitions c WHERE ${competitionWhere(c)};`
+  );
+});
+writeSeed(
+  'R__seed_06_standings.sql',
+  [
+    'Semilla de dev y staging: la clasificación de cada competición de standings.csv',
+    '(docs/04-datos/datos-ejemplo/). No se edita a mano: la escribe scripts/datos-ejemplo/semillas.mjs.',
+    'Es repetible e idempotente: INSERT IGNORE sobre la clave única competición + equipo.',
+  ],
+  standingRows,
+);

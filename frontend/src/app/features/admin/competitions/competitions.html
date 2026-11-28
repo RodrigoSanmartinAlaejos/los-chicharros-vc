@@ -200,6 +200,11 @@
                         >
                           Jornadas<span class="visually-hidden"> de {{ competition.name }}</span>
                         </button>
+                        <a class="link-button" [routerLink]="[competition.id, 'clasificacion']">
+                          Clasificación<span class="visually-hidden">
+                            de {{ competition.name }}</span
+                          >
+                        </a>
                         <button type="button" class="link-button" (click)="startEdit(competition)">
                           Editar<span class="visually-hidden"> {{ competition.name }}</span>
                         </button>

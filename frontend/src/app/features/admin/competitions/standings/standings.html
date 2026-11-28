@@ -1,0 +1,89 @@
+<p class="back">
+  <a routerLink="/gestion/competiciones">← Competiciones</a>
+</p>
+<h1>Clasificación</h1>
+
+@switch (status()) {
+  @case ('loading') {
+    <p class="state">Cargando la clasificación…</p>
+  }
+  @case ('not-found') {
+    <p class="state">Esta competición no existe.</p>
+  }
+  @case ('error') {
+    <p class="state">No se ha podido cargar la clasificación.</p>
+  }
+  @default {
+    <p class="intro">
+      <strong>{{ competition()?.name }}</strong>. Escribe los datos de cada equipo y guarda: la
+      tabla de la web se ordena sola por puntos, partidos ganados y cociente de sets. A partir de la
+      fase 3 se calculará con los resultados.
+    </p>
+    <p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
+
+    @if (rows().length === 0) {
+      <p class="state">
+        No hay equipos en la categoría y la temporada de esta competición. Créalos en Equipos.
+      </p>
+    } @else {
+      <form [formGroup]="sheet" (ngSubmit)="save()" novalidate>
+        @if (formError(); as message) {
+          <p class="alert" role="alert">{{ message }}</p>
+        }
+        <div class="panel__card">
+          <table class="panel__table standings">
+            <caption class="visually-hidden">
+              Clasificación de
+              {{
+                competition()?.name
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col"><abbr title="Puesto">#</abbr></th>
+                <th scope="col">Equipo</th>
+                @for (column of columns; track column.name) {
+                  <th scope="col">
+                    <abbr [title]="column.title">{{ column.label }}</abbr>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody formArrayName="rows">
+              @for (row of rows(); track row.team.id; let i = $index) {
+                <tr [formGroupName]="i" [class.own]="row.team.ownClub">
+                  <td data-label="Puesto">{{ row.position ?? '—' }}</td>
+                  <th scope="row" data-label="Equipo">{{ row.team.name }}</th>
+                  @for (column of columns; track column.name) {
+                    <td [attr.data-label]="column.title">
+                      <input
+                        type="number"
+                        [min]="column.name === 'points' ? null : 0"
+                        [formControlName]="column.name"
+                        [attr.aria-label]="column.title + ' de ' + row.team.name"
+                        [attr.aria-invalid]="errorOf(i, column.name) ? 'true' : null"
+                        [attr.title]="errorOf(i, column.name)"
+                      />
+                    </td>
+                  }
+                </tr>
+                @if (rowError(i); as message) {
+                  <tr class="row-error">
+                    <td colspan="9">
+                      <p class="field__error" role="alert">{{ row.team.name }}: {{ message }}</p>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="form__buttons">
+          <button type="submit" class="button button--primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : 'Guardar clasificación' }}
+          </button>
+        </div>
+      </form>
+    }
+  }
+}
