@@ -10,6 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Subject, catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
+import { ImagePicker, imageUploadError } from '../../../shared/admin/image-picker/image-picker';
 import { Page } from '../../../shared/admin/page';
 import { applyProblem, errorMessage } from '../../../shared/admin/problem';
 import { PeopleApi } from './people.api';
@@ -40,7 +41,7 @@ interface Query {
  */
 @Component({
   selector: 'cv-people',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImagePicker],
   templateUrl: './people.html',
   styleUrls: ['../../../shared/admin/crud-panel.scss', './people.scss'],
 })
@@ -65,6 +66,10 @@ export class People implements OnInit {
   protected readonly formOpen = signal(false);
   protected readonly editingId = signal<number | null>(null);
   protected readonly confirmingId = signal<number | null>(null);
+  /** Foto de la persona que se edita (H14): se sube aparte, en cuanto se elige. */
+  protected readonly photoUrl = signal<string | null>(null);
+  protected readonly uploadingPhoto = signal(false);
+  protected readonly photoError = signal<string | null>(null);
   protected readonly saving = signal(false);
   protected readonly formError = signal<string | null>(null);
   protected readonly listError = signal<string | null>(null);
@@ -122,6 +127,7 @@ export class People implements OnInit {
   }
 
   protected startEdit(person: Person): void {
+    this.photoUrl.set(person.photoUrl);
     const { firstName, lastName, birthDate, imageConsent } = person;
     this.openForm(person.id, { firstName, lastName, birthDate: birthDate ?? '', imageConsent });
   }
@@ -157,6 +163,28 @@ export class People implements OnInit {
       error: (error: unknown) => {
         this.saving.set(false);
         this.formError.set(applyProblem(this.form, error));
+      },
+    });
+  }
+
+  /** Sube la foto sin tocar el formulario: lo que se esté escribiendo no se pierde. */
+  protected uploadPhoto(file: File): void {
+    const id = this.editingId();
+    if (id === null) {
+      return;
+    }
+    this.uploadingPhoto.set(true);
+    this.photoError.set(null);
+    this.api.uploadPhoto(id, file).subscribe({
+      next: (saved) => {
+        this.uploadingPhoto.set(false);
+        this.photoUrl.set(saved.photoUrl);
+        this.notice.set(`Se ha cambiado la foto de ${this.fullName(saved)}.`);
+        this.reload();
+      },
+      error: (error: unknown) => {
+        this.uploadingPhoto.set(false);
+        this.photoError.set(imageUploadError(error));
       },
     });
   }
@@ -228,6 +256,7 @@ export class People implements OnInit {
   private openForm(id: number | null, value: object): void {
     this.form.reset(value);
     this.formError.set(null);
+    this.photoError.set(null);
     this.listError.set(null);
     this.confirmingId.set(null);
     this.editingId.set(id);

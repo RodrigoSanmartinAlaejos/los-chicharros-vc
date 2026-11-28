@@ -83,6 +83,18 @@
           >Sin él, la web pública muestra una silueta en lugar de su foto.</span
         >
       </div>
+      @if (editingId() !== null) {
+        <div class="field--wide">
+          <cv-image-picker
+            label="Foto"
+            [alt]="'Foto actual de ' + form.controls.firstName.value"
+            [imageUrl]="photoUrl()"
+            [uploading]="uploadingPhoto()"
+            [error]="photoError()"
+            (picked)="uploadPhoto($event)"
+          />
+        </div>
+      }
       <div class="form__buttons">
         <button type="submit" class="button button--primary" [disabled]="saving()">
           {{ saving() ? 'Guardando…' : 'Guardar' }}
@@ -136,10 +148,15 @@
                 @for (person of page.content; track person.id) {
                   <tr>
                     <td data-label="Persona">
-                      <span
-                        ><strong>{{ person.lastName }}</strong
-                        >, {{ person.firstName }}</span
-                      >
+                      <span class="person">
+                        @if (person.photoUrl) {
+                          <img class="avatar" [src]="person.photoUrl" alt="" />
+                        }
+                        <span
+                          ><strong>{{ person.lastName }}</strong
+                          >, {{ person.firstName }}</span
+                        >
+                      </span>
                     </td>
                     <td data-label="Nacimiento">{{ formatBirthDate(person.birthDate) }}</td>
                     <td data-label="Imagen">

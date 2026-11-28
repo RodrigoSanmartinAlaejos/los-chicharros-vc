@@ -7,6 +7,8 @@ import com.loschicharros.api.news.dto.NewsPatchRequest;
 import com.loschicharros.api.news.dto.NewsRequest;
 import com.loschicharros.api.news.dto.NewsResponse;
 import com.loschicharros.api.news.dto.NewsSummary;
+import com.loschicharros.api.storage.ImageUpload;
+import com.loschicharros.api.storage.StoredImages;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -38,16 +40,18 @@ public class NewsService {
 
   private final NewsRepository news;
   private final MarkdownRenderer markdown;
+  private final StoredImages images;
   private final Clock clock;
 
   @Autowired
-  public NewsService(NewsRepository news, MarkdownRenderer markdown) {
-    this(news, markdown, Clock.systemUTC());
+  public NewsService(NewsRepository news, MarkdownRenderer markdown, StoredImages images) {
+    this(news, markdown, images, Clock.systemUTC());
   }
 
-  NewsService(NewsRepository news, MarkdownRenderer markdown, Clock clock) {
+  NewsService(NewsRepository news, MarkdownRenderer markdown, StoredImages images, Clock clock) {
     this.news = news;
     this.markdown = markdown;
+    this.images = images;
     this.clock = clock;
   }
 
@@ -142,6 +146,18 @@ public class NewsService {
     if (request.getFeatured() != null) {
       article.markFeatured(request.getFeatured());
     }
+    return forEditor(article);
+  }
+
+  /**
+   * Pone o cambia la imagen principal (H14); la anterior se borra al confirmar el cambio.
+   *
+   * @throws ResourceNotFoundException si no existe o está borrada
+   */
+  @Transactional
+  public NewsResponse replaceImage(Long id, ImageUpload upload) {
+    var article = get(id);
+    article.changeImage(images.replace("news", "noticia-" + id, upload, article.getImageUrl()));
     return forEditor(article);
   }
 

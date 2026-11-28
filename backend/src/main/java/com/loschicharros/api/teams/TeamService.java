@@ -5,6 +5,8 @@ import com.loschicharros.api.common.error.ConflictException;
 import com.loschicharros.api.common.error.InvalidFieldException;
 import com.loschicharros.api.common.error.ResourceNotFoundException;
 import com.loschicharros.api.seasons.Season;
+import com.loschicharros.api.storage.ImageUpload;
+import com.loschicharros.api.storage.StoredImages;
 import com.loschicharros.api.teams.dto.TeamRequest;
 import com.loschicharros.api.teams.dto.TeamResponse;
 import com.loschicharros.api.teams.dto.TeamSummary;
@@ -24,12 +26,17 @@ public class TeamService {
   private final TeamRepository teams;
   private final TeamMembershipRepository memberships;
   private final EntityManager entityManager;
+  private final StoredImages images;
 
   public TeamService(
-      TeamRepository teams, TeamMembershipRepository memberships, EntityManager entityManager) {
+      TeamRepository teams,
+      TeamMembershipRepository memberships,
+      EntityManager entityManager,
+      StoredImages images) {
     this.teams = teams;
     this.memberships = memberships;
     this.entityManager = entityManager;
+    this.images = images;
   }
 
   /**
@@ -89,7 +96,20 @@ public class TeamService {
   }
 
   /**
-   * Borra un equipo y su plantilla.
+   * Pone o cambia el escudo o la foto del equipo (H14); el anterior se borra al confirmar el
+   * cambio.
+   *
+   * @throws ResourceNotFoundException si no existe
+   */
+  @Transactional
+  public TeamResponse replaceCrest(Long id, ImageUpload upload) {
+    var team = get(id);
+    team.changeCrest(images.replace("teams", "equipo-" + id, upload, team.getCrestUrl()));
+    return TeamResponse.from(team, memberships.findRoster(id));
+  }
+
+  /**
+   * Borra un equipo, su plantilla y su escudo.
    *
    * @throws ResourceNotFoundException si no existe
    * @throws ConflictException si tiene partidos o clasificaciones
@@ -101,6 +121,7 @@ public class TeamService {
       memberships.deleteByTeamId(id);
       teams.delete(team);
       teams.flush();
+      images.deleteAfterCommit(team.getCrestUrl());
     } catch (DataIntegrityViolationException e) {
       throw new ConflictException(
           "No se puede borrar el equipo " + team.getName() + ": tiene partidos o clasificaciones");

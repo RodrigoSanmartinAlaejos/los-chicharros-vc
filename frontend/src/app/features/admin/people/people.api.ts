@@ -31,6 +31,13 @@ export class PeopleApi {
     return this.http.put<Person>(`${URL}/${id}`, request);
   }
 
+  /** Sube la foto (multipart, campo `file`); la anterior la borra la API (H14). */
+  uploadPhoto(id: number, file: File): Observable<Person> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.put<Person>(`${URL}/${id}/photo`, body);
+  }
+
   remove(id: number): Observable<void> {
     return this.http.delete<void>(`${URL}/${id}`);
   }

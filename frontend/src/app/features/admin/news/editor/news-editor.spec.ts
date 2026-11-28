@@ -178,6 +178,55 @@ describe('NewsEditor', () => {
     expect(navigate).toHaveBeenCalledWith(['/gestion/noticias']);
   });
 
+  it('sube la imagen sin perder lo que se está escribiendo', async () => {
+    const { fixture, page } = await render('7', DRAFT);
+    type(page, '#news-title', 'Título sin guardar');
+
+    const file = new File(['png'], 'foto.png', { type: 'image/png' });
+    const input = page.querySelector('input[type=file]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [file] });
+    input.dispatchEvent(new Event('change'));
+    const put = http.expectOne('/api/v1/news/7/image');
+    expect(put.request.method).toBe('PUT');
+    expect((put.request.body as FormData).get('file')).toBe(file);
+    put.flush({ ...DRAFT, imageUrl: '/api/images/news/x-noticia-7.png' });
+    await fixture.whenStable();
+
+    expect(page.querySelector('.picker__preview')?.getAttribute('src')).toBe(
+      '/api/images/news/x-noticia-7.png',
+    );
+    expect((page.querySelector('#news-title') as HTMLInputElement).value).toBe(
+      'Título sin guardar',
+    );
+    expect(page.querySelector('.notice')?.textContent).toContain('Se ha cambiado la imagen.');
+  });
+
+  it('pide guardar antes de poner la imagen a una noticia nueva', async () => {
+    const { page } = await render('nueva');
+
+    expect(page.querySelector('input[type=file]')).toBeNull();
+    expect(page.textContent).toContain('Guarda el borrador para poder añadirle la imagen');
+  });
+
+  it('muestra el error de la API al subir la imagen', async () => {
+    const { fixture, page } = await render('7', DRAFT);
+    const input = page.querySelector('input[type=file]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['x'], 'foto.png', { type: 'image/png' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    http.expectOne('/api/v1/news/7/image').flush(
+      {
+        status: 400,
+        errors: [{ field: 'file', message: 'Tiene que ser una imagen JPG, PNG o WebP' }],
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    await fixture.whenStable();
+
+    expect(page.querySelector('.picker .field__error')?.textContent).toContain('JPG, PNG o WebP');
+  });
+
   it('avisa si la noticia no existe', async () => {
     const { fixture, page } = await render('99');
     http

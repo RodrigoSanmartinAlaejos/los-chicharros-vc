@@ -6,8 +6,9 @@
 # Herramientas de la raíz (Husky y lint-staged)
 /node_modules/
 
-# Backend
+# Backend (uploads: imágenes subidas en dev con IMAGE_STORAGE=local)
 backend/target/
+backend/uploads/
 
 # Frontend
 frontend/node_modules/

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-labelledby="t">
+  <title id="t">Camiseta de Los Chicharros V.C.: imagen del equipo cuando no hay foto</title>
+  <rect width="800" height="600" fill="#E6DFD0"/>
+  <path d="M290 120 L360 95 C375 125 425 125 440 95 L510 120 L600 200 L545 265 L505 235 V500 H295 V235 L255 265 L200 200 Z" fill="#12394A" stroke="#C9A66B" stroke-width="8" stroke-linejoin="round"/>
+  <text x="400" y="330" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="64" fill="#F5F1E8">LCV</text>
+  <path d="M330 390 C355 375 375 405 400 390 S445 375 470 390" fill="none" stroke="#C9A66B" stroke-width="7" stroke-linecap="round"/>
+</svg>

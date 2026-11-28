@@ -36,6 +36,13 @@ export class TeamsApi {
     return this.http.put<Team>(`${URL}/${id}`, request);
   }
 
+  /** Sube el escudo o la foto (multipart, campo `file`); el anterior lo borra la API (H14). */
+  uploadCrest(id: number, file: File): Observable<Team> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.put<Team>(`${URL}/${id}/crest`, body);
+  }
+
   remove(id: number): Observable<void> {
     return this.http.delete<void>(`${URL}/${id}`);
   }

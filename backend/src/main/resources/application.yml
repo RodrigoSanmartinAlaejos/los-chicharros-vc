@@ -58,6 +58,13 @@ app:
   admin:
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
+  # Imágenes (H14): en disco en dev (carpeta backend/uploads, servida en /api/images/**) y en
+  # Cloudinary en staging y prod, cada entorno en su carpeta (reglas técnicas, regla 13 de Java)
+  images:
+    storage: ${IMAGE_STORAGE:local}
+    local-directory: ${IMAGE_DIR:uploads}
+    cloudinary-url: ${CLOUDINARY_URL:}
+    cloudinary-folder: los-chicharros/dev
 
 # Documentación de la API (T08): /swagger-ui y /v3/api-docs, solo con las rutas de /api/v1. Las
 # respuestas de error salen de la convención de la API (OpenApiConfig), no de ApiExceptionHandler

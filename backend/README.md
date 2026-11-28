@@ -29,6 +29,19 @@ $b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create
 
 O en Linux y macOS: `openssl rand -base64 48`.
 
+## Imágenes
+
+Las imágenes de noticias, personas y equipos (H14) se guardan donde diga `IMAGE_STORAGE`:
+
+| Valor | Dónde | Cuándo |
+| --- | --- | --- |
+| `local` | Carpeta `backend/uploads/` (fuera de Git), servida por la API en `/api/images/**` | `dev`, por defecto |
+| `cloudinary` | Cloudinary, en la carpeta `los-chicharros/<entorno>` | `staging` y `prod`, por defecto |
+
+Con `cloudinary` hace falta `CLOUDINARY_URL`, que se copia de «API environment variable» en el panel de Cloudinary (`cloudinary://<api_key>:<api_secret>@<cloud_name>`). Si falta o no tiene esa forma, la API no arranca y dice por qué, sin mostrar el secreto.
+
+Para probar Cloudinary en local: pon `IMAGE_STORAGE=cloudinary` en el `.env`, arranca la API y sube una imagen desde el panel. Debe aparecer en la carpeta `los-chicharros/dev` de la Media Library, y al cambiarla, la anterior desaparece. Vuelve a `IMAGE_STORAGE=local` al terminar.
+
 ## Documentación de la API
 
 Con la API arrancada, la documentación interactiva está en <http://localhost:8080/swagger-ui> y el

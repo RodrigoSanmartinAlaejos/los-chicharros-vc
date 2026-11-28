@@ -6,6 +6,7 @@ import com.loschicharros.api.news.dto.NewsRequest;
 import com.loschicharros.api.news.dto.NewsResponse;
 import com.loschicharros.api.news.dto.NewsSummary;
 import com.loschicharros.api.security.Roles;
+import com.loschicharros.api.storage.ImageUpload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -29,7 +31,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
@@ -155,5 +159,23 @@ class NewsController {
     return authentication != null
         && authentication.getAuthorities().stream()
             .anyMatch(authority -> ADMIN_AUTHORITY.equals(authority.getAuthority()));
+  }
+
+  // Subir una imagen no sigue la tabla de la convención: 413 si pasa de 5 MB, nunca 409
+  @PreAuthorize(Roles.ONLY_ADMIN)
+  @Operation(summary = "Subir la imagen de una noticia")
+  @ApiResponse(responseCode = "200", description = "OK")
+  @ApiResponse(responseCode = "400", ref = "#/components/responses/BadRequest")
+  @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized")
+  @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+  @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFound")
+  @ApiResponse(responseCode = "413", ref = "#/components/responses/PayloadTooLarge")
+  @PutMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  NewsResponse upload(
+      @PathVariable Long id,
+      @Parameter(description = "JPG, PNG o WebP de 5 MB como máximo")
+          @RequestPart(name = ImageUpload.FIELD, required = false)
+          MultipartFile file) {
+    return news.replaceImage(id, ImageUpload.of(file));
   }
 }

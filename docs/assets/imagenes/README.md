@@ -1,6 +1,6 @@
 # Imágenes de ejemplo
 
-Última revisión: 2026-11-23.
+Última revisión: 2026-11-28.
 
 Imágenes para los datos de ejemplo de la web: portada, equipos, personas sin foto y noticias. Todas son **ilustraciones propias**, dibujadas en SVG con los colores de la [paleta](../../02-requisitos/paleta-colores.md). No hay fotos de personas reales, así que no hace falta consentimiento de imagen ni hay riesgo de mostrar a menores.
 
@@ -19,6 +19,8 @@ Obra propia del proyecto, con la misma licencia que el repositorio: [MIT](../../
 | [`../escudo.svg`](../escudo.svg) | 200 × 240 | Escudo del club | Propia, MIT |
 
 Cada SVG lleva un `<title>` que describe la imagen, para lectores de pantalla.
+
+La web las sirve en `/assets/imagenes/` desde una copia en `frontend/public/assets/imagenes/` (desde el #58): Angular no puede leer ficheros de fuera de `frontend/`. Si cambias una, cópiala también allí.
 
 ## Si se añaden fotos
 

@@ -92,6 +92,22 @@
         <label for="news-featured">Destacada</label>
         <span id="news-featured-hint" class="field__hint">Sale primero en la portada.</span>
       </div>
+      <div class="field--wide">
+        @if (news(); as current) {
+          <cv-image-picker
+            label="Imagen"
+            alt="Imagen actual de la noticia"
+            [imageUrl]="current.imageUrl"
+            [uploading]="uploadingImage()"
+            [error]="imageError()"
+            (picked)="uploadImage($event)"
+          />
+        } @else {
+          <p class="field__hint image-later">
+            Guarda el borrador para poder añadirle la imagen principal.
+          </p>
+        }
+      </div>
       <div class="field field--wide">
         <label for="news-content">Cuerpo (Markdown)</label>
         <textarea

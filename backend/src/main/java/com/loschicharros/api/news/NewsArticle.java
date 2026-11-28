@@ -79,6 +79,11 @@ public class NewsArticle extends Auditable {
     this.publishedAt = when;
   }
 
+  /** La imagen principal, ya guardada (H14). */
+  public void changeImage(String imageUrl) {
+    this.imageUrl = imageUrl;
+  }
+
   public void markFeatured(boolean featured) {
     this.featured = featured;
   }

@@ -40,6 +40,13 @@ export class NewsApi {
     return this.http.patch<News>(`${URL}/${id}`, patch);
   }
 
+  /** Sube la imagen principal (multipart, campo `file`); la anterior la borra la API (H14). */
+  uploadImage(id: number, file: File): Observable<News> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.put<News>(`${URL}/${id}/image`, body);
+  }
+
   remove(id: number): Observable<void> {
     return this.http.delete<void>(`${URL}/${id}`);
   }

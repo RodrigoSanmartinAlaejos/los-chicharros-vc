@@ -5,6 +5,8 @@ import com.loschicharros.api.common.error.ResourceNotFoundException;
 import com.loschicharros.api.common.web.PageResponse;
 import com.loschicharros.api.people.dto.PersonRequest;
 import com.loschicharros.api.people.dto.PersonResponse;
+import com.loschicharros.api.storage.ImageUpload;
+import com.loschicharros.api.storage.StoredImages;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
@@ -30,10 +32,13 @@ public class PersonService {
 
   private final PersonRepository people;
   private final ApplicationEventPublisher events;
+  private final StoredImages images;
 
-  public PersonService(PersonRepository people, ApplicationEventPublisher events) {
+  public PersonService(
+      PersonRepository people, ApplicationEventPublisher events, StoredImages images) {
     this.people = people;
     this.events = events;
+    this.images = images;
   }
 
   /**
@@ -82,6 +87,19 @@ public class PersonService {
         request.lastName().strip(),
         request.birthDate(),
         request.hasImageConsent());
+    return PersonResponse.from(person);
+  }
+
+  /**
+   * Pone o cambia la foto (H14); la anterior se borra al confirmar el cambio. La web pública solo
+   * la muestra si la persona tiene consentimiento de imagen.
+   *
+   * @throws ResourceNotFoundException si no existe o está borrada
+   */
+  @Transactional
+  public PersonResponse replacePhoto(Long id, ImageUpload upload) {
+    var person = get(id);
+    person.changePhoto(images.replace("people", "persona-" + id, upload, person.getPhotoUrl()));
     return PersonResponse.from(person);
   }
 

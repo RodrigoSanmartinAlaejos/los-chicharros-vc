@@ -2,6 +2,8 @@ package com.loschicharros.api.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.loschicharros.api.support.AuthTokens;
+import com.loschicharros.api.support.TempDirImageStorage;
 import com.loschicharros.api.support.TestcontainersConfiguration;
 import com.loschicharros.api.support.probe.ProbeController;
 import java.net.URI;
@@ -21,7 +23,12 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Import({TestcontainersConfiguration.class, ProbeController.class})
+@Import({
+  TestcontainersConfiguration.class,
+  ProbeController.class,
+  TempDirImageStorage.class,
+  AuthTokens.class
+})
 class ForwardedHeadersIT {
 
   @LocalServerPort private int port;

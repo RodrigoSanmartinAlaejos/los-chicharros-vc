@@ -11,3 +11,6 @@ app:
   admin:
     email: admin@loschicharros.test
     password: contrasena-de-los-tests
+  # Ni disco ni Cloudinary: las imágenes las guarda TempDirImageStorage en una carpeta temporal
+  images:
+    storage: test
