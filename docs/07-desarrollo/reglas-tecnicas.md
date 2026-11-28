@@ -247,8 +247,8 @@ Solo la configuración exclusiva del administrador (usuarios, roles e historial)
 4. `@Transactional` en los métodos del servicio, no en controladores ni repositorios; `readOnly = true` en las lecturas.
 5. Errores: excepciones propias que un `@RestControllerAdvice` traduce a `ProblemDetail`. Nunca se devuelve `null` para decir «no encontrado»: se usa `Optional` en repositorios y una excepción en el servicio.
 6. Autorización con `@PreAuthorize` en el servicio o el controlador, siguiendo la matriz de permisos, y la comprobación de propiedad («¿es el entrenador de este equipo?», «¿es el tutor de este menor?») en el servicio.
-7. Fechas con `java.time`: `Instant` para momentos exactos (guardados en UTC), `LocalDate` para fechas sin hora. Dinero con `BigDecimal`, nunca `double`.
-8. Relaciones JPA en `FetchType.LAZY` y consultas con `@EntityGraph` o `JOIN FETCH` cuando haga falta la relación. Nada de `CascadeType.ALL` por defecto.
+7. Fechas con `java.time`: `Instant` para momentos exactos (guardados en UTC), `LocalDate` para fechas sin hora. Dinero con `BigDecimal`, nunca `double`. Las horas viajan en UTC, pero los días son los del club (`Atlantic/Canary`): para saber qué día es un `Instant`, o desde qué momento empieza un día, se usa siempre `common/time/ClubTime` (en el panel, `shared/admin/club-time.ts`), nunca la zona del servidor ni la del navegador. Desde el #63.
+8. Relaciones JPA en `FetchType.LAZY` y consultas con `@EntityGraph` o `JOIN FETCH` cuando haga falta la relación. Nada de `CascadeType.ALL` por defecto. En las consultas `@Modifying`, `flushAutomatically = true` si antes hay cambios sin guardar, pero no `clearAutomatically = true` si después se usan entidades ya cargadas: las desconecta y su relación perezosa falla con `LazyInitializationException` (pasó en el #65).
 9. Logs con SLF4J: `info` para eventos de negocio, `warn` para lo recuperable, `error` para fallos. Nunca se registran contraseñas, tokens ni datos personales.
 10. Lombok solo para `@Getter`, `@Setter` y `@NoArgsConstructor` en entidades. Nunca `@Data` en entidades (rompe `equals` y `hashCode` con las relaciones).
 11. Las entidades de negocio heredan de la clase base auditable con `createdAt`, `updatedAt`, `createdBy` y `updatedBy`, rellenados por la auditoría de Spring Data (`@EnableJpaAuditing`), nunca a mano.
@@ -346,7 +346,7 @@ frontend/src/app/
 5. El access token se guarda solo en memoria (un servicio), nunca en `localStorage` ni `sessionStorage`, y se añade en un interceptor. Al cargar la aplicación en el navegador se pide uno nuevo con la cookie de refresco.
 6. Los permisos por rol se comprueban con guards. Ocultar un botón no es seguridad: el backend vuelve a comprobarlo.
 7. Rutas con carga diferida (*lazy loading*) por funcionalidad.
-8. Formularios reactivos con validación tipada; los mensajes de error se muestran junto al campo.
+8. Formularios reactivos con validación tipada; los mensajes de error se muestran junto al campo. Todo `<form>` con `(ngSubmit)` lleva `[formGroup]` (un `FormArray` va dentro de un `FormGroup`): sin él, Angular no crea la directiva del formulario y el envío no hace nada (pasó en el #63 y en el #65).
 9. Estado del componente con *signals*; RxJS para flujos asíncronos (HTTP, búsquedas). Suscripciones con `async` pipe o `takeUntilDestroyed`, nunca sin cerrar.
 10. Cada pantalla con datos tiene tres estados visibles: cargando, vacío y error.
 11. Los textos de la interfaz en español y en las plantillas, no en el código TypeScript.

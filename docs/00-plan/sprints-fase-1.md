@@ -8,7 +8,7 @@ Cómo se reparte el trabajo de la fase 1 (MVP público) en sprints de dos semana
 
 - Dedicación: de 5 a 10 horas por semana, es decir, de 10 a 20 horas por sprint.
 - Estimación inicial: **1 punto ≈ 1,5 horas**, así que caben **de 7 a 13 puntos por sprint**; el plan apunta a la parte alta y se recorta si no da tiempo.
-- **Desde el cierre del sprint 2 se planifica por velocidad**: cada sprint lleva como mucho los puntos terminados en el anterior (ahora 13: los sprints 0, 1, 2 y 3 terminaron completos con 8, 13, 13 y 12 puntos). Un sprint que termina todo lo planificado no baja la velocidad aunque llevara menos puntos: el sprint 3 llevaba 12 porque no cabía otra historia sin pasar de 13. La equivalencia de 1,5 horas por punto queda solo como referencia para el trabajo sin ayuda: el sprint 2 se hizo en unas 1,5 horas de reloj, así que convertir puntos en horas no sirve para planificar. Si un sprint no termina sus puntos, el siguiente lleva menos.
+- **Desde el cierre del sprint 2 se planifica por velocidad**: cada sprint lleva como mucho los puntos terminados en el anterior (ahora 13: los sprints 0, 1, 2, 3 y 4 terminaron completos con 8, 13, 13, 12 y 13 puntos). Un sprint que termina todo lo planificado no baja la velocidad aunque llevara menos puntos: el sprint 3 llevaba 12 porque no cabía otra historia sin pasar de 13. La equivalencia de 1,5 horas por punto queda solo como referencia para el trabajo sin ayuda: el sprint 2 se hizo en unas 1,5 horas de reloj, así que convertir puntos en horas no sirve para planificar. Si un sprint no termina sus puntos, el siguiente lleva menos.
 - Total de la fase: 21 historias y 15 tareas técnicas, **124 puntos** en 11 sprints.
 
 ## Sprints
@@ -92,6 +92,23 @@ Terminado el 2026-11-26 con 12 de 12 puntos; objetivo cumplido.
   - En las pruebas a mano de un límite de peticiones, tener en cuenta cómo se recarga: con `refillGreedy` el cubo recupera un permiso cada 3 segundos, así que unas peticiones espaciadas no lo agotan y pareció que el 429 no saltaba. Se comprueba con ráfagas o mirando las respuestas, no solo la pantalla.
   - El bloqueo por IP depende de que la API sepa la IP real del usuario: antes del despliegue (sprint 9) hay que decidir cómo se fía del `X-Forwarded-For` del SSR en Render; si no, todos los usuarios comparten la IP del SSR y el límite.
 
+### Sprint 4: competiciones, partidos y resultados
+
+Terminado el 2026-11-28 con 13 de 13 puntos; objetivo cumplido.
+
+- **Demo:** `/gestion/competiciones` con las diez ligas de la semilla; al añadir jornadas, el formulario propone el siguiente número y la siguiente fecha (con el intervalo de las dos últimas) y rechaza una fecha fuera de la temporada. `/gestion/partidos` muestra cada jornada con sus partidos en la hora de Canarias, aunque la API las guarde en UTC; un partido se aplaza, se cancela o se reprograma desde su fila, y el marcador en sets se introduce o se corrige solo si el partido ya ha empezado (un 3-3 se rechaza antes de enviarlo). `/gestion/competiciones/:id/clasificacion` deja escribir la tabla de cada liga: una fila incoherente (ganados y perdidos que no suman los jugados) se marca sin enviar nada, y al guardar la tabla vuelve ordenada por puntos, ganados y cociente de sets. Todo se lee sin sesión desde la API (`GET /competitions`, `/matches`, `/competitions/{id}/standings`) para las páginas públicas de los sprints 7 y 8.
+
+  <img src="../assets/demos/sprint-4-jornadas-escritorio.png" width="640" alt="Demo del sprint 4: jornadas de una competición con la siguiente jornada propuesta en el panel">
+  <img src="../assets/demos/sprint-4-partidos-escritorio.png" width="640" alt="Demo del sprint 4: partidos de dos jornadas con sus resultados y el formulario para corregir un marcador">
+  <img src="../assets/demos/sprint-4-clasificacion-escritorio.png" width="640" alt="Demo del sprint 4: clasificación editable con el aviso de una fila incoherente">
+  <img src="../assets/demos/sprint-4-clasificacion-movil.png" width="200" alt="Demo del sprint 4: clasificación editable en móvil">
+
+- **Qué mejorar:**
+  - Todo `<form>` con `(ngSubmit)` lleva `[formGroup]`: sin él, el envío no hace nada y solo lo detectaron los tests, dos veces (en el #63 y en el #65). Queda en la regla 8 de TypeScript y Angular.
+  - No usar `@Modifying(clearAutomatically = true)` si después se usan entidades ya cargadas: las desconecta y su relación perezosa falla con `LazyInitializationException` (#65). Queda en la regla 8 de Java.
+  - Las horas viajan en UTC y los días se cuentan en la hora de Canarias, siempre con `ClubTime` en el backend y `club-time.ts` en el panel, nunca con la zona del servidor ni la del navegador. Queda en la regla 7 de Java, antes de que la fase 3 calcule la clasificación con las fechas de los partidos.
+  - Al terminar, la nueva página de clasificación tenía un borde de más bajo el nombre del último equipo: `crud-panel.scss` no contemplaba cabeceras de fila (`<th scope="row">`) en el cuerpo de la tabla. Corregido en el cierre; las tablas de las páginas públicas tendrán que tenerlo en cuenta.
+
 ## Tareas técnicas
 
 | Id | Tarea | Puntos | Sprint |
@@ -114,7 +131,7 @@ Terminado el 2026-11-26 con 12 de 12 puntos; objetivo cumplido.
 
 ## Decisiones
 
-- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos. Al cerrar el sprint 2 (decidido el 2026-11-24) se deja de recalibrar en horas y **se planifica por velocidad** (puntos terminados por sprint, ahora 13); las horas por punto quedan solo como referencia. Al cerrar el sprint 3 (decidido el 2026-11-26) la velocidad sigue en 13: un sprint que termina todo lo planificado no la baja aunque llevara menos puntos.
+- **1 punto ≈ 1,5 horas** como punto de partida, a recalibrar tras el sprint 1. Se mantuvo al cerrar el sprint 1 (decidido el 2026-11-23) porque los dos primeros sprints no son representativos. Al cerrar el sprint 2 (decidido el 2026-11-24) se deja de recalibrar en horas y **se planifica por velocidad** (puntos terminados por sprint, ahora 13); las horas por punto quedan solo como referencia. Al cerrar el sprint 3 (decidido el 2026-11-26) la velocidad sigue en 13: un sprint que termina todo lo planificado no la baja aunque llevara menos puntos. Al cerrar el sprint 4 (2026-11-28) se mantiene en 13.
 - **Sprint 0** para cerrar la fase 0 con las herramientas de calidad (Spotless, Checkstyle, Husky, JaCoCo) y los datos de ejemplo antes de escribir código de negocio.
 - **Sprint y puntos como campos del tablero**, no como etiquetas: un campo de selección «Sprint» y un campo numérico «Puntos».
 - **El despliegue va al final**, en los sprints 9 y 10; hasta entonces la demo de cada sprint se hace en local. El sprint 10 es corto a propósito, para dejar margen a los arreglos de la release.

@@ -1,5 +1,6 @@
 // Lo propio de la clasificación editable: celdas numéricas estrechas y los equipos del club
 // destacados. El resto, en shared/admin/crud-panel.scss.
+@use '../../../../../styles/tokens' as *;
 
 .back {
   margin: 0 0 var(--space-2);
@@ -31,11 +32,17 @@
     text-decoration: none;
   }
 
+  // El nombre del equipo es la cabecera de su fila: se ve como una celda más
   th[scope='row'] {
+    padding: var(--space-3) var(--space-2);
     color: var(--color-text);
     font-size: inherit;
     letter-spacing: normal;
     text-transform: none;
+  }
+
+  tr:last-child th[scope='row'] {
+    border-bottom: 0;
   }
 
   tr.own th[scope='row'] {
@@ -50,4 +57,12 @@
 
 .form__buttons {
   margin-top: var(--space-4);
+}
+
+@media (max-width: #{$breakpoint-md - 1px}) {
+  .standings th[scope='row'] {
+    display: block;
+    padding: var(--space-1) 0;
+    border: 0;
+  }
 }
