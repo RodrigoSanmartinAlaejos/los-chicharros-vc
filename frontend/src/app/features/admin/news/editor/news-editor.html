@@ -1,0 +1,157 @@
+<nav class="breadcrumb" aria-label="Migas de pan">
+  <a routerLink="/gestion/noticias">Noticias</a>
+  <span aria-hidden="true">›</span>
+  <span aria-current="page">{{ news() === null ? 'Nueva' : 'Editar' }}</span>
+</nav>
+
+@switch (status()) {
+  @case ('loading') {
+    <p class="state">Cargando la noticia…</p>
+  }
+  @case ('not-found') {
+    <h1>Noticia no encontrada</h1>
+    <p class="state">Esta noticia no existe o se ha borrado.</p>
+  }
+  @case ('error') {
+    <h1>Noticia</h1>
+    <p class="state">No se ha podido cargar la noticia.</p>
+  }
+  @default {
+    <div class="editor__header">
+      <h1>{{ news()?.title ?? 'Nueva noticia' }}</h1>
+      <span
+        class="badge"
+        [class.badge--muted]="state() === 'draft'"
+        [class.badge--warning]="state() === 'scheduled'"
+        >{{ stateLabels[state()] }}</span
+      >
+    </div>
+    @if (publishedAt(); as date) {
+      <p class="published">
+        {{ state() === 'scheduled' ? 'Se publicará el' : 'Publicada el' }} {{ date }}
+      </p>
+    }
+
+    @if (notice(); as message) {
+      <p class="notice" role="status">{{ message }}</p>
+    }
+
+    <form class="form editor" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      @if (formError(); as message) {
+        <p class="alert" role="alert">{{ message }}</p>
+      }
+      <div class="field field--wide">
+        <label for="news-title">Título</label>
+        <input
+          id="news-title"
+          formControlName="title"
+          maxlength="150"
+          autocomplete="off"
+          aria-describedby="news-title-error"
+          [attr.aria-invalid]="errorOf('title') ? 'true' : null"
+        />
+        <p id="news-title-error" class="field__error">{{ errorOf('title') }}</p>
+      </div>
+      <div class="field field--wide">
+        <label for="news-summary">Resumen</label>
+        <input
+          id="news-summary"
+          formControlName="summary"
+          maxlength="300"
+          autocomplete="off"
+          aria-describedby="news-summary-hint news-summary-error"
+          [attr.aria-invalid]="errorOf('summary') ? 'true' : null"
+        />
+        <span id="news-summary-hint" class="field__hint"
+          >Sale en los listados y en la vista previa al compartir el enlace.</span
+        >
+        <p id="news-summary-error" class="field__error">{{ errorOf('summary') }}</p>
+      </div>
+      <div class="field">
+        <label for="news-type">Tipo</label>
+        <select
+          id="news-type"
+          formControlName="type"
+          aria-describedby="news-type-error"
+          [attr.aria-invalid]="errorOf('type') ? 'true' : null"
+        >
+          <option value="" disabled>Elige el tipo</option>
+          @for (type of types; track type.value) {
+            <option [value]="type.value">{{ type.label }}</option>
+          }
+        </select>
+        <p id="news-type-error" class="field__error">{{ errorOf('type') }}</p>
+      </div>
+      <div class="field field--check featured">
+        <input
+          id="news-featured"
+          type="checkbox"
+          formControlName="featured"
+          aria-describedby="news-featured-hint"
+        />
+        <label for="news-featured">Destacada</label>
+        <span id="news-featured-hint" class="field__hint">Sale primero en la portada.</span>
+      </div>
+      <div class="field field--wide">
+        <label for="news-content">Cuerpo (Markdown)</label>
+        <textarea
+          id="news-content"
+          formControlName="content"
+          rows="14"
+          maxlength="50000"
+          aria-describedby="news-content-hint news-content-error"
+          [attr.aria-invalid]="errorOf('content') ? 'true' : null"
+        ></textarea>
+        <span id="news-content-hint" class="field__hint"
+          >**negrita**, *cursiva*, ## Subtítulo, - lista, [enlace](https://…) y tablas.</span
+        >
+        <p id="news-content-error" class="field__error">{{ errorOf('content') }}</p>
+      </div>
+      <div class="form__buttons editor__buttons">
+        @if (news() !== null) {
+          @if (confirmingDelete()) {
+            <div class="confirm delete" role="group" aria-label="Borrar la noticia">
+              <span>¿Borrar la noticia? Dejará de verse en la web y en el panel.</span>
+              <button
+                type="button"
+                class="button button--danger"
+                [disabled]="saving()"
+                (click)="confirmDelete()"
+              >
+                Sí, borrar
+              </button>
+              <button type="button" class="button" (click)="confirmingDelete.set(false)">
+                Cancelar
+              </button>
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="link-button link-button--danger delete"
+              (click)="confirmingDelete.set(true)"
+            >
+              Borrar noticia
+            </button>
+          }
+        }
+        <button type="submit" class="button" [disabled]="saving()">
+          {{ state() === 'draft' ? 'Guardar borrador' : 'Guardar cambios' }}
+        </button>
+        @if (state() === 'draft') {
+          <button
+            type="button"
+            class="button button--primary"
+            [disabled]="saving()"
+            (click)="publish()"
+          >
+            Publicar
+          </button>
+        } @else {
+          <button type="button" class="button" [disabled]="saving()" (click)="withdraw()">
+            Retirar
+          </button>
+        }
+      </div>
+    </form>
+  }
+}

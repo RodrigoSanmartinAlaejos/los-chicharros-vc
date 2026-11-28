@@ -1,0 +1,120 @@
+<div class="panel__header page-header">
+  <h1>Noticias</h1>
+  <a class="button button--primary" routerLink="nueva">+ Nueva noticia</a>
+</div>
+
+<section aria-labelledby="news-title">
+  <h2 id="news-title" class="visually-hidden">Listado de noticias</h2>
+  <div class="filters" role="group" aria-label="Mostrar">
+    @for (option of filters; track option.value) {
+      <button
+        type="button"
+        class="chip"
+        [attr.aria-pressed]="filter() === option.value"
+        (click)="show(option.value)"
+      >
+        {{ option.label }}
+      </button>
+    }
+  </div>
+
+  <div class="panel__card">
+    @switch (status()) {
+      @case ('loading') {
+        <p class="state">Cargando noticias…</p>
+      }
+      @case ('error') {
+        <p class="state">
+          No se han podido cargar las noticias.
+          <button type="button" class="link-button" (click)="reload()">Reintentar</button>
+        </p>
+      }
+      @default {
+        @if (result(); as page) {
+          @if (page.totalElements === 0) {
+            <p class="state">
+              @switch (filter()) {
+                @case ('published') {
+                  No hay noticias publicadas.
+                }
+                @case ('draft') {
+                  No hay borradores.
+                }
+                @default {
+                  Todavía no hay noticias. Empieza con «Nueva noticia».
+                }
+              }
+            </p>
+          } @else {
+            <table class="panel__table">
+              <thead>
+                <tr>
+                  <th scope="col">Título</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Publicada</th>
+                  <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (news of page.content; track news.id) {
+                  <tr>
+                    <td data-label="Título">
+                      <span class="title">
+                        <strong>{{ news.title }}</strong>
+                        @if (news.featured) {
+                          <span class="featured" title="Destacada" aria-hidden="true">★</span>
+                          <span class="visually-hidden"> (destacada)</span>
+                        }
+                      </span>
+                    </td>
+                    <td data-label="Tipo">{{ typeLabels[news.type] }}</td>
+                    <td data-label="Estado">
+                      <span
+                        class="badge"
+                        [class.badge--muted]="state(news) === 'draft'"
+                        [class.badge--warning]="state(news) === 'scheduled'"
+                        >{{ stateLabels[state(news)] }}</span
+                      >
+                    </td>
+                    <td data-label="Publicada">
+                      {{ news.publishedAt ? formatDate(news.publishedAt) : '—' }}
+                    </td>
+                    <td>
+                      <div class="panel__actions">
+                        <a class="link-button" [routerLink]="[news.id]"
+                          >Editar<span class="visually-hidden"> «{{ news.title }}»</span></a
+                        >
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            @if (page.totalPages > 1) {
+              <nav class="pager" aria-label="Páginas de noticias">
+                <button
+                  type="button"
+                  class="button"
+                  [disabled]="page.page === 0"
+                  (click)="goToPage(page.page - 1)"
+                >
+                  Anterior
+                </button>
+                <span>Página {{ page.page + 1 }} de {{ page.totalPages }}</span>
+                <button
+                  type="button"
+                  class="button"
+                  [disabled]="page.page + 1 >= page.totalPages"
+                  (click)="goToPage(page.page + 1)"
+                >
+                  Siguiente
+                </button>
+              </nav>
+            }
+          }
+        }
+      }
+    }
+  </div>
+</section>

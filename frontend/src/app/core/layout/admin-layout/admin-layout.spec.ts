@@ -34,13 +34,14 @@ describe('AdminLayout', () => {
     const links = Array.from(page.querySelectorAll('.admin__list a'));
 
     expect(links.map((a) => a.textContent?.trim())).toEqual([
+      'Noticias',
       'Equipos',
       'Personas',
       'Competiciones',
       'Partidos',
       'Configuración',
     ]);
-    expect(links[0].getAttribute('href')).toBe('/gestion/equipos');
+    expect(links[0].getAttribute('href')).toBe('/gestion/noticias');
     expect(page.querySelector('.admin__public-link')?.getAttribute('href')).toBe('/');
     expect(page.querySelector('main#contenido')).toBeTruthy();
   });

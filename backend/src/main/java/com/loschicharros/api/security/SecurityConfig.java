@@ -59,7 +59,9 @@ class SecurityConfig {
     "/api/v1/competitions/*/matchdays",
     "/api/v1/competitions/*/standings",
     "/api/v1/matches",
-    "/api/v1/matches/*"
+    "/api/v1/matches/*",
+    "/api/v1/news",
+    "/api/v1/news/by-slug/*"
   };
 
   @Bean
