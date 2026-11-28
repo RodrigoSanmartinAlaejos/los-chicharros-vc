@@ -206,6 +206,61 @@ describe('Matches', () => {
     expect(page.querySelector('tbody .badge')?.classList).toContain('status--cancelled');
   });
 
+  function button(page: HTMLElement, text: string): HTMLButtonElement {
+    return Array.from(page.querySelectorAll('tbody .link-button')).find((one) =>
+      one.textContent?.trim().startsWith(text),
+    ) as HTMLButtonElement;
+  }
+
+  function type(page: HTMLElement, selector: string, value: string) {
+    const input = page.querySelector(selector) as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+  }
+
+  it('pone el resultado en sets de un partido jugado', async () => {
+    const { fixture, page } = await render([J1]);
+
+    button(page, 'Resultado').click();
+    await fixture.whenStable();
+    type(page, '#home-sets-20', '3');
+    type(page, '#away-sets-20', '1');
+    (page.querySelector('.inline-form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+
+    const score = http.expectOne({ method: 'PATCH', url: '/api/v1/matches/20' });
+    expect(score.request.body).toEqual({ homeSets: 3, awaySets: 1 });
+    const finished: Match = { ...MATCH, status: 'FINISHED', homeSets: 3, awaySets: 1 };
+    score.flush(finished);
+    flushSchedule([{ ...J1, matches: [finished] }]);
+    await fixture.whenStable();
+
+    expect(page.querySelector('tbody .badge')?.textContent).toContain('Finalizado');
+    expect(page.querySelector('tbody .badge')?.textContent).toContain('3-1');
+    expect(button(page, 'Corregir resultado')).toBeTruthy();
+  });
+
+  it('no deja guardar un marcador imposible', async () => {
+    const { fixture, page } = await render([J1]);
+
+    button(page, 'Resultado').click();
+    await fixture.whenStable();
+    type(page, '#home-sets-20', '3');
+    type(page, '#away-sets-20', '3');
+    (page.querySelector('.inline-form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+
+    expect(page.querySelector('.inline-form [role=alert]')?.textContent).toContain(
+      'Uno de los dos tiene que llegar a 3 sets',
+    );
+  });
+
+  it('no ofrece poner resultado a un partido que no se ha jugado', async () => {
+    const future: Match = { ...MATCH, startsAt: '2099-05-15T10:00:00Z' };
+    const { page } = await render([{ ...J1, matches: [future] }]);
+
+    expect(button(page, 'Resultado')).toBeUndefined();
+  });
+
   it('avisa si la competición no tiene jornadas', async () => {
     const { page } = await render([]);
 

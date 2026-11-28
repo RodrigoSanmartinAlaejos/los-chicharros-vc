@@ -88,6 +88,13 @@ public class Match extends Auditable {
     }
   }
 
+  /** Registra el resultado en sets: el partido queda finalizado. */
+  public void finish(int homeSets, int awaySets) {
+    this.status = MatchStatus.FINISHED;
+    this.homeSets = homeSets;
+    this.awaySets = awaySets;
+  }
+
   public void reschedule(Instant startsAt) {
     this.startsAt = startsAt;
   }

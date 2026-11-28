@@ -106,7 +106,7 @@ class MatchController {
   @ApiResponse(responseCode = "403", ref = FORBIDDEN)
   @ApiResponse(responseCode = "404", ref = NOT_FOUND)
   @PatchMapping("/{id}")
-  MatchResponse change(@PathVariable Long id, @RequestBody MatchPatchRequest request) {
+  MatchResponse change(@PathVariable Long id, @Valid @RequestBody MatchPatchRequest request) {
     return matches.change(id, request);
   }
 

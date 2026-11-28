@@ -51,6 +51,10 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-3);
+
+  .field--sets input {
+    width: 5rem;
+  }
 }
 
 // En móvil el dato va a la derecha de su etiqueta, también cuando el partido ocupa dos líneas

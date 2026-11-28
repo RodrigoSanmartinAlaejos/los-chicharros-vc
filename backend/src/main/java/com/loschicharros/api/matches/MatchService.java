@@ -40,7 +40,7 @@ public class MatchService {
   private static final Sort DEFAULT_SORT = Sort.by("startsAt", "id");
   private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-  /** Estados que se ponen a mano; el resultado ({@code FINISHED}) llega con el marcador (H20). */
+  /** Estados que se ponen a mano; {@code FINISHED} llega con el marcador (H20). */
   private static final Set<MatchStatus> MANUAL_STATUSES =
       EnumSet.of(MatchStatus.SCHEDULED, MatchStatus.POSTPONED, MatchStatus.CANCELLED);
 
@@ -148,17 +148,26 @@ public class MatchService {
   }
 
   /**
-   * Aplaza, cancela o vuelve a programar un partido, y cambia su hora si llega. Al dejar de estar
+   * Cambia un partido. Con marcador (H20), registra el resultado y lo deja finalizado. Sin él,
+   * aplaza, cancela o vuelve a programar el partido, y cambia su hora si llega; al dejar de estar
    * finalizado pierde el marcador.
    *
    * @throws ResourceNotFoundException si no existe
-   * @throws InvalidFieldException si el estado no se puede poner a mano o la nueva hora cae fuera
-   *     de la temporada
+   * @throws InvalidFieldException si el marcador es imposible o el partido aún no se ha jugado, si
+   *     el estado no se puede poner a mano o si la nueva hora cae fuera de la temporada
    */
   @Transactional
   public MatchResponse change(Long id, MatchPatchRequest request) {
     var match = get(id);
+    if (request.hasScore()) {
+      finish(match, request);
+      return MatchResponse.from(match);
+    }
     if (request.status() != null) {
+      if (request.status() == MatchStatus.FINISHED) {
+        throw new InvalidFieldException(
+            "status", "Para finalizar un partido, indica su marcador en sets");
+      }
       if (!MANUAL_STATUSES.contains(request.status())) {
         throw new InvalidFieldException(
             "status", "Un partido solo se puede programar, aplazar o cancelar desde aquí");
@@ -170,6 +179,33 @@ public class MatchService {
       match.reschedule(request.startsAt());
     }
     return MatchResponse.from(match);
+  }
+
+  /** Registra el marcador: uno de los dos llega a 3 sets y el otro se queda por debajo. */
+  private void finish(Match match, MatchPatchRequest request) {
+    if (request.status() != null && request.status() != MatchStatus.FINISHED) {
+      throw new InvalidFieldException(
+          "status", "Con el marcador, el partido queda finalizado: no se puede poner otro estado");
+    }
+    if (request.startsAt() != null) {
+      throw new InvalidFieldException(
+          "startsAt", "La hora se cambia aparte, no a la vez que el marcador");
+    }
+    var home = request.homeSets();
+    var away = request.awaySets();
+    if (home == null || away == null) {
+      throw new InvalidFieldException(
+          home == null ? "homeSets" : "awaySets", "Faltan los sets de uno de los dos equipos");
+    }
+    if (!(home == 3 && away < 3) && !(away == 3 && home < 3)) {
+      throw new InvalidFieldException(
+          "homeSets", "Uno de los dos tiene que llegar a 3 sets y el otro quedarse en menos de 3");
+    }
+    if (match.getStartsAt().isAfter(Instant.now())) {
+      throw new InvalidFieldException(
+          "homeSets", "El partido todavía no se ha jugado: no puede tener resultado");
+    }
+    match.finish(home, away);
   }
 
   /**

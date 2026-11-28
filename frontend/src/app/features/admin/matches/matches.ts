@@ -42,9 +42,20 @@ function differentTeams(group: AbstractControl): ValidationErrors | null {
   return null;
 }
 
+/** Marcador posible: uno de los dos llega a 3 sets y el otro se queda por debajo. */
+function validScore(group: AbstractControl): ValidationErrors | null {
+  const home = group.get('homeSets')?.value;
+  const away = group.get('awaySets')?.value;
+  if (home === null || away === null) {
+    return null;
+  }
+  return (home === 3 && away < 3) || (away === 3 && home < 3) ? null : { impossibleScore: true };
+}
+
 /**
  * Calendario de una competición (H19): sus jornadas con los partidos, el alta y la edición de
- * partidos, y aplazarlos, cancelarlos o volver a programarlos. Las horas son las de Canarias.
+ * partidos, aplazarlos, cancelarlos o volver a programarlos, y su resultado en sets (H20). Las
+ * horas son las de Canarias.
  */
 @Component({
   selector: 'cv-matches',
@@ -86,6 +97,24 @@ export class Matches implements OnInit {
     startsAt: ['', Validators.required],
   });
   protected readonly rescheduleError = signal<string | null>(null);
+  /** Partido al que se le está poniendo el resultado. */
+  protected readonly scoringId = signal<number | null>(null);
+  protected readonly scoreForm = inject(NonNullableFormBuilder).group(
+    {
+      homeSets: new FormControl<number | null>(null, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(3),
+      ]),
+      awaySets: new FormControl<number | null>(null, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(3),
+      ]),
+    },
+    { validators: validScore },
+  );
+  protected readonly scoreError = signal<string | null>(null);
   /** Aviso para lectores de pantalla tras cada cambio. */
   protected readonly notice = signal('');
 
@@ -179,6 +208,49 @@ export class Matches implements OnInit {
     return match.status === 'POSTPONED' || match.status === 'CANCELLED';
   }
 
+  /** Se puede poner el resultado de un partido ya empezado que no esté cancelado. */
+  protected canScore(match: Match): boolean {
+    return match.status !== 'CANCELLED' && Date.parse(match.startsAt) <= Date.now();
+  }
+
+  protected startScore(match: Match): void {
+    this.confirming.set(null);
+    this.reschedulingId.set(null);
+    this.scoreError.set(null);
+    this.scoreForm.reset({ homeSets: match.homeSets, awaySets: match.awaySets });
+    this.scoringId.set(match.id);
+  }
+
+  protected saveScore(match: Match): void {
+    if (this.scoreForm.invalid) {
+      this.scoreForm.markAllAsTouched();
+      this.scoreError.set(
+        this.scoreForm.hasError('impossibleScore')
+          ? 'Uno de los dos tiene que llegar a 3 sets y el otro quedarse en menos de 3'
+          : 'Indica los sets de los dos equipos, de 0 a 3',
+      );
+      return;
+    }
+    const { homeSets, awaySets } = this.scoreForm.getRawValue();
+    this.api
+      .change(match.id, { homeSets: homeSets as number, awaySets: awaySets as number })
+      .subscribe({
+        next: (saved) => {
+          this.scoringId.set(null);
+          this.notice.set(
+            `Resultado guardado: ${this.title(match)}, ${saved.homeSets}-${saved.awaySets}.`,
+          );
+          this.loadSchedule();
+        },
+        error: (error: unknown) => {
+          const problem = error instanceof HttpErrorResponse ? error.error : null;
+          this.scoreError.set(
+            problem?.errors?.[0]?.message ?? problem?.detail ?? 'No se ha podido guardar.',
+          );
+        },
+      });
+  }
+
   protected startCreate(matchday: MatchdaySchedule): void {
     this.openForm(null, {
       matchdayId: matchday.id,
@@ -269,6 +341,7 @@ export class Matches implements OnInit {
 
   protected startReschedule(match: Match): void {
     this.confirming.set(null);
+    this.scoringId.set(null);
     this.rescheduleError.set(null);
     this.rescheduleForm.reset({ startsAt: toClubInput(match.startsAt) });
     this.reschedulingId.set(match.id);
@@ -335,6 +408,7 @@ export class Matches implements OnInit {
     this.listError.set(null);
     this.confirming.set(null);
     this.reschedulingId.set(null);
+    this.scoringId.set(null);
     this.editingId.set(id);
     this.formOpen.set(true);
   }
